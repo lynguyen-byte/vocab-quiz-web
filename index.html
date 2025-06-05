@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -47,7 +46,6 @@
         .multi-select-option input[type="checkbox"] {
             @apply mr-2;
         }
-
         /* Modal specific styles */
         .modal-overlay {
             position: fixed;
@@ -193,10 +191,7 @@
                     <h3 class="text-2xl font-medium text-yellow-700 mb-4">Nhập Từ Vựng Hàng Loạt</h3>
                     <p class="text-gray-600 mb-4">Nhập mỗi từ trên một dòng theo định dạng: <code class="bg-gray-200 p-1 rounded">English Word - Vietnamese Meaning - Example Sentence (optional)</code></p>
                     <form id="bulkImportVocabForm">
-                        <textarea id="bulkVocabInput" rows="8" placeholder="Ví dụ:
-apple - quả táo - I like to eat an apple.
-book - cuốn sách - Read a good book.
-run - chạy - He can run fast."
+                        <textarea id="bulkVocabInput" rows="8" placeholder="Ví dụ:apple - quả táo - I like to eat an apple.book - cuốn sách - Read a good book.run - chạy - He can run fast."
                                   class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent mb-4"></textarea>
                         <div class="text-right">
                             <button type="submit"
@@ -406,9 +401,10 @@ run - chạy - He can run fast."
             timerInterval: null,
             timeRemaining: 0,
             quizActive: false, // Quiz active status
-            quizTimeLimit: 30, // Default time limit for each question
+            quizTimeLimit: 30, // Default time limit for each question (used for single topic quiz)
             quizType: 'single', // 'single' or 'mixed'
             selectedMixedTopicIds: [], // For mixed quizzes, stores IDs of topics included
+            mixedQuizTopicSettings: {}, // New: stores {topicId: {questionCount: N, timeLimit: M}} for mixed quizzes
             initialWindowWidth: 0, // Store initial window width for cheat detection
             initialWindowHeight: 0 // Store initial window height for cheat detection
         };
@@ -473,7 +469,6 @@ run - chạy - He can run fast."
         const performanceContentDiv = document.getElementById('performanceContent');
         const performanceTableBody = document.getElementById('performanceTableBody');
         const vocabPerformanceTableBody = document.getElementById('vocabPerformanceTableBody'); // New element for vocabulary performance
-
         // Navigation elements
         const navLinks = document.querySelectorAll('.nav-link');
         const sections = document.querySelectorAll('.section');
@@ -532,11 +527,14 @@ run - chạy - He can run fast."
                     if (!topic.results) {
                         topic.results = []; // Initialize results array for existing topics
                     }
-                    // Ensure vocabulary items have performance counters
+                    // Ensure vocabulary items have performance counters and quizSettings
                     topic.vocabulary.forEach(vocab => {
                         if (typeof vocab.correctAttempts === 'undefined') vocab.correctAttempts = 0;
                         if (typeof vocab.incorrectAttempts === 'undefined') vocab.incorrectAttempts = 0;
                     });
+                    if (!topic.quizSettings) {
+                        topic.quizSettings = { mixedQuizQuestionCount: 5, timeLimit: 30 }; // Default settings
+                    }
                 });
             });
 
@@ -546,139 +544,86 @@ run - chạy - He can run fast."
             if (!nhimExists) {
                 appData.categories.push({ id: 'nhim', name: 'Nhím', topics: [] });
             }
-            saveAppData(); // Save to ensure defaults and result arrays are persisted
+            saveAppData(); // Save after ensuring all default structures
         }
 
         /**
-         * Generates a unique ID using timestamp and random string.
-         * @returns {string} Unique ID.
-         */
-        function generateUniqueId() {
-            return Date.now().toString(36) + Math.random().toString(36).substring(2);
-        }
-
-        /**
-         * Shuffles an array using the Fisher-Yates algorithm.
+         * Shuffles an array randomly.
          * @param {Array} array - The array to shuffle.
-         * @returns {Array} The shuffled array.
+         * @returns {Array} - The shuffled array.
          */
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+                [array[i], array[j]] = [array[j], array[i]]; // ES6 swap
             }
             return array;
         }
 
-        /**
-         * Switches the active section of the website.
-         * @param {string} sectionId - The ID of the section to activate.
-         */
-        function showSection(sectionId) {
-            sections.forEach(section => {
-                section.classList.remove('active');
-            });
-            document.getElementById(sectionId).classList.add('active');
+        // --- Navigation Logic ---
+        navLinks.forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetSectionId = this.getAttribute('href');
 
-            navLinks.forEach(link => {
-                link.classList.remove('active-nav-link');
-                if (link.getAttribute('href') === '#' + sectionId) {
-                    link.classList.add('active-nav-link');
+                // Hide all sections
+                sections.forEach(section => section.classList.remove('active'));
+
+                // Show the target section
+                document.querySelector(targetSectionId).classList.add('active');
+
+                // Update active nav link style
+                navLinks.forEach(nav => nav.classList.remove('active-nav-link'));
+                this.classList.add('active-nav-link');
+
+                // Perform actions specific to the navigated section
+                if (targetSectionId === '#topics-section') {
+                    renderCategories();
+                    populateParentCategorySelect();
+                } else if (targetSectionId === '#vocabulary-management-section') {
+                    populateCategorySelectForVocab();
+                    vocabContentDiv.classList.add('hidden'); // Hide vocab content until topic is selected
+                } else if (targetSectionId === '#quiz-section') {
+                    populateCategorySelectForQuiz();
+                    // Ensure quiz area is hidden on navigation
+                    quizArea.classList.add('hidden');
+                    quizResultsDiv.classList.add('hidden');
+                    quizSettingsDiv.classList.remove('hidden'); // Show quiz settings
+                    // Re-render multi-topic checkboxes if mixed mode is active
+                    if (currentQuiz.quizType === 'mixed') {
+                        renderMultiTopicCheckboxes();
+                    } else {
+                        // Ensure mixed options are hidden when navigating to quiz section
+                        mixedTopicQuizOptionsDiv.classList.add('hidden');
+                        singleTopicQuizOptionsDiv.classList.remove('hidden');
+                    }
+                } else if (targetSectionId === '#performance-section') {
+                    populateCategorySelectForPerformance();
+                    performanceContentDiv.classList.add('hidden'); // Hide content until topic selected
                 }
             });
+        });
 
-            // End quiz if active when switching sections
-            if (currentQuiz.quizActive && sectionId !== 'quiz-section') {
-                cheatDetected = true; // Mark as cheat because user left quiz
-                endQuiz(false); // End quiz without saving results
-                showMessage("Bài kiểm tra đã bị hủy vì bạn đã chuyển sang phần khác.", "error");
-                showCheatDetectionMessage(); // Display the cheat message
+        // --- Topic Management ---
+
+        /**
+         * Populates the parent category select dropdown for adding new topics.
+         */
+        function populateParentCategorySelect() {
+            parentCategorySelect.innerHTML = ''; // Clear existing options
+            appData.categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.name;
+                parentCategorySelect.appendChild(option);
+            });
+            // Set currentCategoryId to the first category if available
+            if (appData.categories.length > 0) {
+                currentCategoryId = appData.categories[0].id;
+            } else {
+                currentCategoryId = null;
             }
         }
-
-        // --- Cheat Detection Functions ---
-        /**
-         * Handles visibility change events to detect if the user switches tabs/windows during a quiz.
-         */
-        function handleVisibilityChange() {
-            if (document.hidden && currentQuiz.quizActive) {
-                // User switched to another tab or minimized the window
-                console.log("Cheat detected: Tab hidden.");
-                cheatDetected = true;
-                endQuiz(false); // End quiz without saving results
-                showCheatDetectionMessage();
-            }
-        }
-
-        /**
-         * Handles window resize events to detect potential screen splitting or resizing during a quiz.
-         */
-        function handleResize() {
-            // A simple heuristic: if the window size changes significantly while quiz is active
-            // This might be too sensitive, consider refining based on specific needs.
-            // For a stricter check, you might compare current dimensions to initial quiz dimensions.
-            if (currentQuiz.quizActive) {
-                const currentWidth = window.innerWidth;
-                const currentHeight = window.innerHeight;
-
-                // Define a threshold for "significant" resize
-                const widthThreshold = currentQuiz.initialWindowWidth * 0.1; // 10% change
-                const heightThreshold = currentQuiz.initialWindowHeight * 0.1; // 10% change
-
-                const widthChanged = Math.abs(currentWidth - currentQuiz.initialWindowWidth) > widthThreshold;
-                const heightChanged = Math.abs(currentHeight - currentQuiz.initialWindowHeight) > heightThreshold;
-
-                if (widthChanged || heightChanged) {
-                    console.log("Cheat detected: Window resized.");
-                    cheatDetected = true;
-                    endQuiz(false); // End quiz without saving results
-                    showCheatDetectionMessage();
-                }
-            }
-        }
-
-        /**
-         * Displays the cheat detection modal.
-         */
-        function showCheatDetectionMessage() {
-            cheatDetectionMessage.classList.remove('hidden');
-        }
-
-        /**
-         * Closes the cheat detection modal and resets quiz state.
-         */
-        function closeCheatDetectionMessage() {
-            cheatDetectionMessage.classList.add('hidden');
-            cheatDetected = false; // Reset cheat status
-            // Reset quiz area and results
-            quizArea.classList.add('hidden');
-            quizResultsDiv.classList.add('hidden');
-            // Re-enable quiz settings to allow retaking
-            quizSettingsDiv.classList.remove('hidden');
-            // Clear any previous quiz questions and reset score
-            currentQuiz = {
-                questions: [],
-                currentQuestionIndex: 0,
-                score: 0,
-                timerInterval: null,
-                timeRemaining: 0,
-                quizActive: false,
-                quizTimeLimit: quizTimeLimitInput.value,
-                quizType: currentQuiz.quizType, // Retain last quiz type
-                selectedMixedTopicIds: currentQuiz.selectedMixedTopicIds, // Retain selected mixed topics
-                initialWindowWidth: 0,
-                initialWindowHeight: 0
-            };
-            feedbackMessageDiv.classList.add('hidden');
-            englishAnswerInput.value = '';
-            // Reset select dropdowns for quiz to default options if they were active
-            selectTopicForQuiz.value = "";
-            selectCategoryForQuiz.value = "";
-            renderTopicSelects('quiz'); // Re-render to clear previous selections
-            renderMixedTopicCheckboxes(); // Re-render for mixed quiz
-        }
-
-        // --- Topic Management Functions ---
 
         /**
          * Renders the list of categories and their sub-topics.
@@ -693,25 +638,28 @@ run - chạy - He can run fast."
 
             appData.categories.forEach(category => {
                 const categoryDiv = document.createElement('div');
-                categoryDiv.className = 'bg-white p-6 rounded-lg shadow-md border-t-4 border-purple-500';
+                categoryDiv.className = 'bg-purple-100 p-6 rounded-lg shadow-md';
                 categoryDiv.innerHTML = `
                     <h3 class="text-2xl font-semibold text-purple-700 mb-4">${category.name}</h3>
-                    <div id="topics-${category.id}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div id="topics-for-${category.id}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         ${category.topics.length === 0 ? '<p class="text-gray-500 col-span-full">Chưa có chủ đề con nào trong mục này.</p>' : ''}
                     </div>
                 `;
                 categoriesListDiv.appendChild(categoryDiv);
 
-                const topicsContainer = categoryDiv.querySelector(`#topics-${category.id}`);
+                const topicsContainer = categoryDiv.querySelector(`#topics-for-${category.id}`);
                 category.topics.forEach(topic => {
                     const topicCard = document.createElement('div');
-                    topicCard.className = 'bg-purple-100 p-4 rounded-lg shadow-sm flex justify-between items-center';
+                    topicCard.className = 'bg-white p-4 rounded-lg shadow-sm border border-purple-200 flex justify-between items-center';
                     topicCard.innerHTML = `
-                        <span class="font-medium text-purple-800">${topic.name} (${topic.vocabulary.length} từ)</span>
-                        <button data-topic-id="${topic.id}" data-category-id="${category.id}"
-                                class="delete-topic-btn bg-red-500 hover:bg-red-600 text-white p-2 rounded-full text-xs transition-colors duration-200">
-                            Xóa
-                        </button>
+                        <span class="text-lg font-medium text-gray-800">${topic.name}</span>
+                        <div class="flex space-x-2">
+                            <button class="text-red-500 hover:text-red-700 delete-topic-btn" data-category-id="${category.id}" data-topic-id="${topic.id}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
                     `;
                     topicsContainer.appendChild(topicCard);
                 });
@@ -719,168 +667,126 @@ run - chạy - He can run fast."
 
             // Add event listeners for delete buttons
             document.querySelectorAll('.delete-topic-btn').forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const topicIdToDelete = event.target.dataset.topicId;
-                    const categoryId = event.target.dataset.categoryId;
-                    deleteTopic(categoryId, topicIdToDelete);
+                button.addEventListener('click', (e) => {
+                    const categoryId = e.currentTarget.dataset.categoryId;
+                    const topicId = e.currentTarget.dataset.topicId;
+                    deleteTopic(categoryId, topicId);
                 });
             });
         }
 
-        /**
-         * Renders the category select dropdowns in various sections.
-         */
-        function renderCategorySelects() {
-            const selects = [
-                parentCategorySelect,
-                selectCategoryForVocab,
-                selectCategoryForQuiz,
-                selectCategoryForPerformance
-            ];
+        addTopicForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const parentCategoryId = parentCategorySelect.value;
+            const newTopicName = newTopicNameInput.value.trim();
 
-            selects.forEach(selectElement => {
-                selectElement.innerHTML = ''; // Clear existing options
-                appData.categories.forEach(category => {
-                    const option = document.createElement('option');
-                    option.value = category.id;
-                    option.textContent = category.name;
-                    selectElement.appendChild(option);
-                });
-                // Set currentCategoryId based on the first category available or reset
-                if (appData.categories.length > 0) {
-                    currentCategoryId = appData.categories[0].id;
-                    selectElement.value = currentCategoryId; // Set default selection
-                } else {
-                    currentCategoryId = null;
-                }
-            });
-
-            // Manually trigger change to load topics for vocab, quiz, performance
-            selectCategoryForVocab.dispatchEvent(new Event('change'));
-            selectCategoryForQuiz.dispatchEvent(new Event('change'));
-            selectCategoryForPerformance.dispatchEvent(new Event('change'));
-        }
-
-        /**
-         * Renders the topic select dropdowns based on the selected category.
-         * @param {string} section - The section for which to render (e.g., 'vocab', 'quiz', 'performance').
-         */
-        function renderTopicSelects(section) {
-            let categoryId;
-            let topicSelectElement;
-
-            if (section === 'vocab') {
-                categoryId = selectCategoryForVocab.value;
-                topicSelectElement = selectTopicForVocab;
-                vocabContentDiv.classList.add('hidden'); // Hide vocab content until a topic is selected
-            } else if (section === 'quiz') {
-                categoryId = selectCategoryForQuiz.value;
-                topicSelectElement = selectTopicForQuiz;
-            } else if (section === 'performance') {
-                categoryId = selectCategoryForPerformance.value;
-                topicSelectElement = selectTopicForPerformance;
-                performanceContentDiv.classList.add('hidden'); // Hide performance content
-            } else {
+            if (!newTopicName) {
+                showMessage("Tên chủ đề con không được để trống.", "error");
                 return;
             }
 
-            topicSelectElement.innerHTML = '<option value="">-- Chọn chủ đề con --</option>';
-            const category = appData.categories.find(cat => cat.id === categoryId);
-
+            const category = appData.categories.find(cat => cat.id === parentCategoryId);
             if (category) {
-                category.topics.forEach(topic => {
-                    const option = document.createElement('option');
-                    option.value = topic.id;
-                    option.textContent = `${topic.name} (${topic.vocabulary.length} từ)`;
-                    topicSelectElement.appendChild(option);
-                });
-            }
-            // Trigger change event to load content if a topic was already selected or first option is chosen
-            topicSelectElement.dispatchEvent(new Event('change'));
-        }
-
-        /**
-         * Adds a new sub-topic to a parent category.
-         * @param {Event} event - The form submission event.
-         */
-        addTopicForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-            const parentCatId = parentCategorySelect.value;
-            const topicName = newTopicNameInput.value.trim();
-
-            if (!parentCatId) {
-                showMessage("Vui lòng chọn một mục lớn.", "error");
-                return;
-            }
-            if (!topicName) {
-                showMessage("Vui lòng nhập tên chủ đề con.", "error");
-                return;
-            }
-
-            const category = appData.categories.find(cat => cat.id === parentCatId);
-            if (category) {
-                // Check for duplicate topic names within the same category
-                if (category.topics.some(topic => topic.name.toLowerCase() === topicName.toLowerCase())) {
-                    showMessage(`Chủ đề con "${topicName}" đã tồn tại trong mục "${category.name}".`, "error");
-                    return;
-                }
-
+                // Generate a simple ID for the new topic
+                const newTopicId = `${parentCategoryId}-${Date.now()}`;
                 category.topics.push({
-                    id: generateUniqueId(),
-                    name: topicName,
-                    vocabulary: [],
-                    results: [] // Initialize results array for new topic
+                    id: newTopicId,
+                    name: newTopicName,
+                    vocabulary: [], // Initialize with empty vocabulary array
+                    results: [], // Initialize with empty results array
+                    quizSettings: { mixedQuizQuestionCount: 5, timeLimit: 30 } // Default mixed quiz settings
                 });
                 saveAppData();
                 renderCategories();
-                renderCategorySelects(); // Re-render selects to update topic counts
-                showMessage(`Đã thêm chủ đề "${topicName}" vào mục "${category.name}".`);
-                newTopicNameInput.value = '';
+                newTopicNameInput.value = ''; // Clear input
+                showMessage(`Đã thêm chủ đề "${newTopicName}" vào mục "${category.name}".`, "success");
             } else {
-                showMessage("Mục lớn không tồn tại.", "error");
+                showMessage("Không tìm thấy mục lớn đã chọn.", "error");
             }
         });
 
         /**
-         * Deletes a sub-topic.
+         * Deletes a sub-topic from a given category.
          * @param {string} categoryId - The ID of the parent category.
          * @param {string} topicId - The ID of the topic to delete.
          */
         function deleteTopic(categoryId, topicId) {
-            const category = appData.categories.find(cat => cat.id === categoryId);
-            if (category) {
-                const topicIndex = category.topics.findIndex(topic => topic.id === topicId);
-                if (topicIndex > -1) {
-                    const topicName = category.topics[topicIndex].name;
-                    if (confirm(`Bạn có chắc chắn muốn xóa chủ đề "${topicName}" và tất cả từ vựng của nó?`)) {
-                        category.topics.splice(topicIndex, 1);
-                        saveAppData();
-                        renderCategories();
-                        renderCategorySelects(); // Re-render selects to update topic counts
-                        showMessage(`Đã xóa chủ đề "${topicName}".`);
-                        // If the deleted topic was currently selected in vocab/quiz/performance, reset them
-                        if (currentTopicId === topicId) {
-                            currentTopicId = null;
-                            selectTopicForVocab.value = "";
-                            vocabContentDiv.classList.add('hidden');
-                            selectTopicForQuiz.value = "";
-                            selectTopicForPerformance.value = "";
-                            performanceContentDiv.classList.add('hidden');
-                        }
+            const categoryIndex = appData.categories.findIndex(cat => cat.id === categoryId);
+            if (categoryIndex !== -1) {
+                const topicIndex = appData.categories[categoryIndex].topics.findIndex(topic => topic.id === topicId);
+                if (topicIndex !== -1) {
+                    const deletedTopicName = appData.categories[categoryIndex].topics[topicIndex].name;
+                    appData.categories[categoryIndex].topics.splice(topicIndex, 1);
+                    saveAppData();
+                    renderCategories();
+                    showMessage(`Đã xóa chủ đề "${deletedTopicName}".`, "success");
+                    // If the deleted topic was currently selected for vocab or quiz, reset selections
+                    if (currentTopicId === topicId) {
+                        currentTopicId = null;
+                        selectTopicForVocab.value = '';
+                        selectTopicForQuiz.value = '';
+                        selectTopicForPerformance.value = '';
+                        vocabContentDiv.classList.add('hidden');
+                        performanceContentDiv.classList.add('hidden');
                     }
+                    // Re-populate other selects just in case
+                    populateTopicSelectForVocab();
+                    populateTopicSelectForQuiz();
+                    populateTopicSelectForPerformance();
+                    renderMultiTopicCheckboxes(); // Update mixed quiz checkboxes
                 }
             }
         }
 
-        // --- Vocabulary Management Functions ---
+        // --- Vocabulary Management ---
 
-        selectCategoryForVocab.addEventListener('change', () => renderTopicSelects('vocab'));
+        /**
+         * Populates the category select dropdown for vocabulary management.
+         */
+        function populateCategorySelectForVocab() {
+            selectCategoryForVocab.innerHTML = ''; // Clear existing options
+            appData.categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.name;
+                selectCategoryForVocab.appendChild(option);
+            });
+            // Trigger topic select population if a category is selected
+            if (selectCategoryForVocab.value) {
+                currentCategoryId = selectCategoryForVocab.value;
+                populateTopicSelectForVocab();
+            } else {
+                selectTopicForVocab.innerHTML = '<option value="">-- Chọn chủ đề con để quản lý từ vựng --</option>';
+            }
+        }
 
-        selectTopicForVocab.addEventListener('change', () => {
-            currentTopicId = selectTopicForVocab.value;
+        /**
+         * Populates the topic select dropdown based on the selected category for vocabulary management.
+         */
+        function populateTopicSelectForVocab() {
+            selectTopicForVocab.innerHTML = '<option value="">-- Chọn chủ đề con để quản lý từ vựng --</option>'; // Clear existing options
+            const selectedCategory = appData.categories.find(cat => cat.id === selectCategoryForVocab.value);
+            if (selectedCategory) {
+                currentCategoryId = selectedCategory.id; // Update current category ID
+                selectedCategory.topics.forEach(topic => {
+                    const option = document.createElement('option');
+                    option.value = topic.id;
+                    option.textContent = topic.name;
+                    selectTopicForVocab.appendChild(option);
+                });
+            } else {
+                currentCategoryId = null;
+            }
+            vocabContentDiv.classList.add('hidden'); // Hide vocab content if category changes
+            currentTopicId = null; // Reset current topic ID
+        }
+
+        selectCategoryForVocab.addEventListener('change', populateTopicSelectForVocab);
+        selectTopicForVocab.addEventListener('change', function () {
+            currentTopicId = this.value;
             if (currentTopicId) {
                 vocabContentDiv.classList.remove('hidden');
-                renderVocabularyTable();
+                renderCurrentTopicVocab();
             } else {
                 vocabContentDiv.classList.add('hidden');
             }
@@ -889,598 +795,876 @@ run - chạy - He can run fast."
         /**
          * Renders the vocabulary table for the currently selected topic.
          */
-        function renderVocabularyTable() {
-            currentTopicVocabTableBody.innerHTML = ''; // Clear existing
-            const category = appData.categories.find(cat => cat.id === selectCategoryForVocab.value);
-            const topic = category?.topics.find(t => t.id === currentTopicId);
+        function renderCurrentTopicVocab() {
+            currentTopicVocabTableBody.innerHTML = '';
+            const category = appData.categories.find(cat => cat.id === currentCategoryId);
+            const topic = category ? category.topics.find(t => t.id === currentTopicId) : null;
 
-            if (topic && topic.vocabulary.length > 0) {
-                currentVocabCountSpan.textContent = topic.vocabulary.length;
-                topic.vocabulary.forEach(vocab => {
-                    const row = currentTopicVocabTableBody.insertRow();
-                    row.innerHTML = `
-                        <td class="py-3 px-6">${vocab.english}</td>
-                        <td class="py-3 px-6">${vocab.vietnamese}</td>
-                        <td class="py-3 px-6">${vocab.example || ''}</td>
-                        <td class="py-3 px-6 text-center">
-                            <button data-vocab-id="${vocab.id}" class="edit-vocab-btn bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded-md transition-colors duration-200 mr-2">Sửa</button>
-                            <button data-vocab-id="${vocab.id}" class="delete-vocab-btn bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-1 rounded-md transition-colors duration-200">Xóa</button>
-                        </td>
-                    `;
-                });
-            } else {
+            if (!topic || topic.vocabulary.length === 0) {
                 currentTopicVocabTableBody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-gray-500">Chủ đề này chưa có từ vựng nào.</td></tr>';
                 currentVocabCountSpan.textContent = 0;
+                return;
             }
+
+            topic.vocabulary.forEach((vocab, index) => {
+                const row = currentTopicVocabTableBody.insertRow();
+                row.innerHTML = `
+                    <td class="py-3 px-6 text-left">${vocab.english}</td>
+                    <td class="py-3 px-6 text-left">${vocab.vietnamese}</td>
+                    <td class="py-3 px-6 text-left">${vocab.example || ''}</td>
+                    <td class="py-3 px-6 text-center">
+                        <button class="text-blue-500 hover:text-blue-700 mr-2 edit-vocab-btn" data-index="${index}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </button>
+                        <button class="text-red-500 hover:text-red-700 delete-vocab-btn" data-index="${index}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </td>
+                `;
+            });
+            currentVocabCountSpan.textContent = topic.vocabulary.length;
 
             // Add event listeners for edit and delete buttons
             document.querySelectorAll('.edit-vocab-btn').forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const vocabId = event.target.dataset.vocabId;
-                    editVocabulary(vocabId);
+                button.addEventListener('click', (e) => {
+                    const index = parseInt(e.currentTarget.dataset.index);
+                    editVocab(index);
                 });
             });
-
             document.querySelectorAll('.delete-vocab-btn').forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const vocabId = event.target.dataset.vocabId;
-                    deleteVocabulary(vocabId);
+                button.addEventListener('click', (e) => {
+                    const index = parseInt(e.currentTarget.dataset.index);
+                    deleteVocab(index);
                 });
             });
         }
 
-        /**
-         * Adds a single vocabulary item.
-         * @param {Event} event - The form submission event.
-         */
-        addSingleVocabForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-            const category = appData.categories.find(cat => cat.id === selectCategoryForVocab.value);
-            const topic = category?.topics.find(t => t.id === currentTopicId);
-
-            if (!topic) {
+        addSingleVocabForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (!currentTopicId) {
                 showMessage("Vui lòng chọn một chủ đề con để thêm từ vựng.", "error");
                 return;
             }
 
-            const english = englishWordInput.value.trim();
-            const vietnamese = vietnameseMeaningInput.value.trim();
-            const example = exampleSentenceInput.value.trim();
+            const englishWord = englishWordInput.value.trim();
+            const vietnameseMeaning = vietnameseMeaningInput.value.trim();
+            const exampleSentence = exampleSentenceInput.value.trim();
 
-            if (!english || !vietnamese) {
-                showMessage("Vui lòng nhập Từ Tiếng Anh và Nghĩa Tiếng Việt.", "error");
+            if (!englishWord || !vietnameseMeaning) {
+                showMessage("Từ tiếng Anh và Nghĩa tiếng Việt không được để trống.", "error");
                 return;
             }
 
-            // Check for duplicate English word within the same topic
-            if (topic.vocabulary.some(v => v.english.toLowerCase() === english.toLowerCase())) {
-                showMessage(`Từ "${english}" đã tồn tại trong chủ đề này.`, "error");
-                return;
-            }
+            const category = appData.categories.find(cat => cat.id === currentCategoryId);
+            const topic = category ? category.topics.find(t => t.id === currentTopicId) : null;
 
-            topic.vocabulary.push({
-                id: generateUniqueId(),
-                english: english,
-                vietnamese: vietnamese,
-                example: example,
-                correctAttempts: 0,
-                incorrectAttempts: 0
-            });
-            saveAppData();
-            renderVocabularyTable();
-            showMessage(`Đã thêm từ "${english}".`);
-            addSingleVocabForm.reset();
-            // Re-render topic select to update vocabulary count
-            renderCategorySelects();
-        });
-
-        /**
-         * Edits an existing vocabulary item.
-         * @param {string} vocabId - The ID of the vocabulary item to edit.
-         */
-        function editVocabulary(vocabId) {
-            const category = appData.categories.find(cat => cat.id === selectCategoryForVocab.value);
-            const topic = category?.topics.find(t => t.id === currentTopicId);
-            const vocab = topic?.vocabulary.find(v => v.id === vocabId);
-
-            if (vocab) {
-                const newEnglish = prompt("Nhập từ tiếng Anh mới:", vocab.english);
-                if (newEnglish === null || newEnglish.trim() === '') return; // User cancelled or empty
-
-                const newVietnamese = prompt("Nhập nghĩa tiếng Việt mới:", vocab.vietnamese);
-                if (newVietnamese === null || newVietnamese.trim() === '') return; // User cancelled or empty
-
-                const newExample = prompt("Nhập ví dụ câu mới (tùy chọn):", vocab.example || "");
-
-                // Check for duplicate English word (excluding itself)
-                if (topic.vocabulary.some(v => v.id !== vocabId && v.english.toLowerCase() === newEnglish.trim().toLowerCase())) {
-                    showMessage(`Từ "${newEnglish.trim()}" đã tồn tại trong chủ đề này. Không thể cập nhật.`, "error");
+            if (topic) {
+                // Check for duplicate vocabulary
+                const isDuplicate = topic.vocabulary.some(vocab =>
+                    vocab.english.toLowerCase() === englishWord.toLowerCase()
+                );
+                if (isDuplicate) {
+                    showMessage(`Từ "${englishWord}" đã tồn tại trong chủ đề này.`, "error");
                     return;
                 }
 
-                vocab.english = newEnglish.trim();
-                vocab.vietnamese = newVietnamese.trim();
-                vocab.example = newExample ? newExample.trim() : '';
-
+                topic.vocabulary.push({
+                    english: englishWord,
+                    vietnamese: vietnameseMeaning,
+                    example: exampleSentence,
+                    correctAttempts: 0, // Initialize performance counters
+                    incorrectAttempts: 0
+                });
                 saveAppData();
-                renderVocabularyTable();
-                showMessage(`Đã cập nhật từ "${vocab.english}".`);
+                renderCurrentTopicVocab();
+                addSingleVocabForm.reset();
+                showMessage(`Đã thêm từ "${englishWord}" vào chủ đề "${topic.name}".`, "success");
             } else {
-                showMessage("Không tìm thấy từ vựng để chỉnh sửa.", "error");
+                showMessage("Không tìm thấy chủ đề hoặc mục lớn đã chọn.", "error");
             }
-        }
+        });
 
-        /**
-         * Deletes a vocabulary item.
-         * @param {string} vocabId - The ID of the vocabulary item to delete.
-         */
-        function deleteVocabulary(vocabId) {
-            const category = appData.categories.find(cat => cat.id === selectCategoryForVocab.value);
-            const topic = category?.topics.find(t => t.id === currentTopicId);
-
-            if (topic) {
-                const vocabIndex = topic.vocabulary.findIndex(v => v.id === vocabId);
-                if (vocabIndex > -1) {
-                    const vocabName = topic.vocabulary[vocabIndex].english;
-                    if (confirm(`Bạn có chắc chắn muốn xóa từ "${vocabName}"?`)) {
-                        topic.vocabulary.splice(vocabIndex, 1);
-                        saveAppData();
-                        renderVocabularyTable();
-                        showMessage(`Đã xóa từ "${vocabName}".`);
-                        // Re-render topic select to update vocabulary count
-                        renderCategorySelects();
-                    }
-                }
-            } else {
-                showMessage("Không tìm thấy chủ đề hoặc từ vựng để xóa.", "error");
-            }
-        }
-
-        /**
-         * Imports vocabulary items in bulk.
-         * @param {Event} event - The form submission event.
-         */
-        bulkImportVocabForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-            const category = appData.categories.find(cat => cat.id === selectCategoryForVocab.value);
-            const topic = category?.topics.find(t => t.id === currentTopicId);
-
-            if (!topic) {
+        bulkImportVocabForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (!currentTopicId) {
                 showMessage("Vui lòng chọn một chủ đề con để nhập từ vựng.", "error");
                 return;
             }
 
             const bulkText = bulkVocabInput.value.trim();
             if (!bulkText) {
-                showMessage("Vui lòng nhập từ vựng để nhập hàng loạt.", "error");
+                showMessage("Vui lòng nhập dữ liệu từ vựng.", "error");
                 return;
             }
 
             const lines = bulkText.split('\n').filter(line => line.trim() !== '');
-            let addedCount = 0;
-            let skippedCount = 0;
-            const skippedWords = [];
+            const newVocabs = [];
+            const failedLines = [];
 
             lines.forEach(line => {
-                const parts = line.split(' - ').map(p => p.trim());
+                const parts = line.split(' - ').map(part => part.trim());
                 if (parts.length >= 2) {
-                    const english = parts[0];
-                    const vietnamese = parts[1];
-                    const example = parts[2] || '';
+                    const englishWord = parts[0];
+                    const vietnameseMeaning = parts[1];
+                    const exampleSentence = parts[2] || '';
 
-                    if (english && vietnamese) {
-                        // Check for duplicate before adding
-                        if (topic.vocabulary.some(v => v.english.toLowerCase() === english.toLowerCase())) {
-                            skippedCount++;
-                            skippedWords.push(english);
-                        } else {
-                            topic.vocabulary.push({
-                                id: generateUniqueId(),
-                                english: english,
-                                vietnamese: vietnamese,
-                                example: example,
-                                correctAttempts: 0,
-                                incorrectAttempts: 0
-                            });
-                            addedCount++;
-                        }
+                    if (englishWord && vietnameseMeaning) {
+                        newVocabs.push({
+                            english: englishWord,
+                            vietnamese: vietnameseMeaning,
+                            example: exampleSentence,
+                            correctAttempts: 0,
+                            incorrectAttempts: 0
+                        });
+                    } else {
+                        failedLines.push(line);
                     }
+                } else {
+                    failedLines.push(line);
                 }
             });
 
-            if (addedCount > 0) {
-                saveAppData();
-                renderVocabularyTable();
-                let message = `Đã nhập thành công ${addedCount} từ.`;
-                if (skippedCount > 0) {
-                    message += ` Bỏ qua ${skippedCount} từ (đã tồn tại): ${skippedWords.join(', ')}.`;
-                    showMessage(message, "error", 8000); // Show error for longer
+            const category = appData.categories.find(cat => cat.id === currentCategoryId);
+            const topic = category ? category.topics.find(t => t.id === currentTopicId) : null;
+
+            if (topic) {
+                let addedCount = 0;
+                let skippedDuplicates = 0;
+                newVocabs.forEach(newVocab => {
+                    const isDuplicate = topic.vocabulary.some(vocab =>
+                        vocab.english.toLowerCase() === newVocab.english.toLowerCase()
+                    );
+                    if (!isDuplicate) {
+                        topic.vocabulary.push(newVocab);
+                        addedCount++;
+                    } else {
+                        skippedDuplicates++;
+                    }
+                });
+
+                if (addedCount > 0) {
+                    saveAppData();
+                    renderCurrentTopicVocab();
+                    bulkVocabInput.value = '';
+                    let message = `Đã nhập thành công ${addedCount} từ vào chủ đề "${topic.name}".`;
+                    if (skippedDuplicates > 0) {
+                        message += ` Bỏ qua ${skippedDuplicates} từ trùng lặp.`;
+                    }
+                    if (failedLines.length > 0) {
+                        message += ` Không thể nhập ${failedLines.length} dòng do định dạng sai.`;
+                    }
+                    showMessage(message, "success");
+                } else if (skippedDuplicates > 0) {
+                    showMessage(`Tất cả các từ đã nhập đều trùng lặp.`, "error");
+                } else if (failedLines.length > 0) {
+                    showMessage(`Không có từ nào được nhập. ${failedLines.length} dòng định dạng sai.`, "error");
                 } else {
-                    showMessage(message);
+                    showMessage("Không có từ nào được nhập.", "error");
                 }
-                bulkVocabInput.value = '';
-                // Re-render topic select to update vocabulary count
-                renderCategorySelects();
-            } else if (skippedCount > 0) {
-                showMessage(`Không có từ nào được thêm mới. ${skippedCount} từ đã tồn tại: ${skippedWords.join(', ')}.`, "error");
             } else {
-                showMessage("Không có từ vựng hợp lệ nào để nhập.", "error");
+                showMessage("Không tìm thấy chủ đề hoặc mục lớn đã chọn.", "error");
             }
         });
 
+        /**
+         * Edits a vocabulary item.
+         * @param {number} index - The index of the vocabulary item in the array.
+         */
+        function editVocab(index) {
+            const category = appData.categories.find(cat => cat.id === currentCategoryId);
+            const topic = category ? category.topics.find(t => t.id === currentTopicId) : null;
 
-        // --- Quiz Section Functions ---
+            if (!topic || !topic.vocabulary[index]) {
+                showMessage("Không tìm thấy từ vựng để chỉnh sửa.", "error");
+                return;
+            }
 
-        // Event listeners for quiz mode radios
+            const vocab = topic.vocabulary[index];
+            const newEnglish = prompt("Nhập từ tiếng Anh mới:", vocab.english);
+            if (newEnglish === null) return; // User cancelled
+
+            const newVietnamese = prompt("Nhập nghĩa tiếng Việt mới:", vocab.vietnamese);
+            if (newVietnamese === null) return; // User cancelled
+
+            const newExample = prompt("Nhập ví dụ câu mới (tùy chọn):", vocab.example || '');
+            if (newExample === null) return; // User cancelled
+
+            if (!newEnglish.trim() || !newVietnamese.trim()) {
+                showMessage("Từ tiếng Anh và Nghĩa tiếng Việt không được để trống.", "error");
+                return;
+            }
+
+            // Check for duplicate after edit (excluding itself)
+            const isDuplicate = topic.vocabulary.some((v, i) =>
+                i !== index && v.english.toLowerCase() === newEnglish.trim().toLowerCase()
+            );
+            if (isDuplicate) {
+                showMessage(`Từ "${newEnglish.trim()}" đã tồn tại trong chủ đề này.`, "error");
+                return;
+            }
+
+            vocab.english = newEnglish.trim();
+            vocab.vietnamese = newVietnamese.trim();
+            vocab.example = newExample.trim();
+            saveAppData();
+            renderCurrentTopicVocab();
+            showMessage("Đã cập nhật từ vựng.", "success");
+        }
+
+        /**
+         * Deletes a vocabulary item.
+         * @param {number} index - The index of the vocabulary item in the array.
+         */
+        function deleteVocab(index) {
+            if (!confirm("Bạn có chắc muốn xóa từ này không?")) {
+                return;
+            }
+
+            const category = appData.categories.find(cat => cat.id === currentCategoryId);
+            const topic = category ? category.topics.find(t => t.id === currentTopicId) : null;
+
+            if (topic && topic.vocabulary[index]) {
+                const deletedWord = topic.vocabulary[index].english;
+                topic.vocabulary.splice(index, 1);
+                saveAppData();
+                renderCurrentTopicVocab();
+                showMessage(`Đã xóa từ "${deletedWord}".`, "success");
+            } else {
+                showMessage("Không tìm thấy từ vựng để xóa.", "error");
+            }
+        }
+
+        // --- Quiz Section ---
+
+        /**
+         * Populates the category select dropdown for quiz options.
+         */
+        function populateCategorySelectForQuiz() {
+            selectCategoryForQuiz.innerHTML = ''; // Clear existing options
+            appData.categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.name;
+                selectCategoryForQuiz.appendChild(option);
+            });
+            // Trigger topic select population if a category is selected
+            if (selectCategoryForQuiz.value) {
+                currentCategoryId = selectCategoryForQuiz.value;
+                populateTopicSelectForQuiz();
+            } else {
+                selectTopicForQuiz.innerHTML = '<option value="">-- Chọn chủ đề con để bắt đầu kiểm tra --</option>';
+            }
+        }
+
+        /**
+         * Populates the topic select dropdown based on the selected category for quiz options.
+         */
+        function populateTopicSelectForQuiz() {
+            selectTopicForQuiz.innerHTML = '<option value="">-- Chọn chủ đề con để bắt đầu kiểm tra --</option>'; // Clear existing options
+            const selectedCategory = appData.categories.find(cat => cat.id === selectCategoryForQuiz.value);
+            if (selectedCategory) {
+                currentCategoryId = selectedCategory.id; // Update current category ID
+                selectedCategory.topics.forEach(topic => {
+                    const option = document.createElement('option');
+                    option.value = topic.id;
+                    option.textContent = topic.name;
+                    selectTopicForQuiz.appendChild(option);
+                });
+            } else {
+                currentCategoryId = null;
+            }
+            currentTopicId = null; // Reset current topic ID for quiz
+        }
+
+        selectCategoryForQuiz.addEventListener('change', populateTopicSelectForQuiz);
+        selectTopicForQuiz.addEventListener('change', function () {
+            currentTopicId = this.value;
+        });
+
+        // Event listener for quiz mode radios
         quizModeRadios.forEach(radio => {
             radio.addEventListener('change', (event) => {
                 currentQuiz.quizType = event.target.value;
                 if (currentQuiz.quizType === 'single') {
                     singleTopicQuizOptionsDiv.classList.remove('hidden');
                     mixedTopicQuizOptionsDiv.classList.add('hidden');
+                    // Reset global quiz settings for single topic if needed
+                    quizQuestionCountInput.value = 5;
+                    quizTimeLimitInput.value = 30;
+                    selectCategoryForQuiz.disabled = false;
+                    selectTopicForQuiz.disabled = false;
                 } else {
                     singleTopicQuizOptionsDiv.classList.add('hidden');
                     mixedTopicQuizOptionsDiv.classList.remove('hidden');
-                    renderMixedTopicCheckboxes();
+                    renderMultiTopicCheckboxes(); // Render checkboxes for mixed quiz
+                    selectCategoryForQuiz.disabled = true; // Disable single topic selections
+                    selectTopicForQuiz.disabled = true;
                 }
             });
-        });
-
-        selectCategoryForQuiz.addEventListener('change', () => renderTopicSelects('quiz'));
-
-        selectTopicForQuiz.addEventListener('change', () => {
-            // No need to set currentTopicId here, as it's only used for single topic quizzes.
-            // currentTopicId will be set when quiz starts.
         });
 
         /**
-         * Renders checkboxes for mixed topic quiz selection.
+         * Renders checkboxes and settings for multiple topics in the mixed quiz options.
          */
-        function renderMixedTopicCheckboxes() {
-            multiTopicCheckboxesDiv.innerHTML = ''; // Clear existing
-            let hasTopics = false;
+        function renderMultiTopicCheckboxes() {
+            multiTopicCheckboxesDiv.innerHTML = ''; // Clear previous checkboxes
 
+            const allSubTopics = [];
             appData.categories.forEach(category => {
-                if (category.topics.length > 0) {
-                    const categoryHeader = document.createElement('h4');
-                    categoryHeader.className = 'font-semibold text-purple-700 col-span-full mt-2 mb-1';
-                    categoryHeader.textContent = category.name;
-                    multiTopicCheckboxesDiv.appendChild(categoryHeader);
-
-                    category.topics.forEach(topic => {
-                        if (topic.vocabulary.length > 0) {
-                            hasTopics = true;
-                            const label = document.createElement('label');
-                            label.className = 'multi-select-option';
-                            label.innerHTML = `
-                                <input type="checkbox" data-topic-id="${topic.id}" class="form-checkbox text-purple-600 rounded-md">
-                                ${topic.name} (${topic.vocabulary.length} từ)
-                            `;
-                            multiTopicCheckboxesDiv.appendChild(label);
-                        }
-                    });
-                }
+                category.topics.forEach(topic => {
+                    if (topic.vocabulary && topic.vocabulary.length > 0) { // Only show topics with vocabulary
+                        allSubTopics.push({
+                            categoryId: category.id,
+                            categoryName: category.name,
+                            topicId: topic.id,
+                            topicName: topic.name,
+                            vocabCount: topic.vocabulary.length,
+                            quizSettings: topic.quizSettings || { mixedQuizQuestionCount: 5, timeLimit: 30 }
+                        });
+                    }
+                });
             });
 
-            if (!hasTopics) {
+            if (allSubTopics.length === 0) {
                 multiTopicCheckboxesDiv.innerHTML = '<p class="text-gray-500 col-span-full">Chưa có chủ đề nào có từ vựng để chọn.</p>';
+                return;
             }
+
+            allSubTopics.forEach(topic => {
+                const div = document.createElement('div');
+                div.className = 'multi-select-option border border-gray-200 rounded-md p-3';
+
+                const checkboxId = `mixed-topic-${topic.topicId}`;
+                div.innerHTML = `
+                    <label for="${checkboxId}" class="inline-flex items-center w-full cursor-pointer">
+                        <input type="checkbox" id="${checkboxId}" value="${topic.topicId}" data-category-id="${topic.categoryId}" class="form-checkbox text-purple-600 h-5 w-5 topic-checkbox">
+                        <span class="ml-2 text-gray-800 font-medium">${topic.categoryName} - ${topic.topicName} (${topic.vocabCount} từ)</span>
+                    </label>
+                    <div class="mt-2 text-gray-700 text-sm pl-7">
+                        <label for="qqc-${topic.topicId}" class="block mb-1">Số câu hỏi:</label>
+                        <input type="number" id="qqc-${topic.topicId}" value="${topic.quizSettings.mixedQuizQuestionCount}" min="1" max="${topic.vocabCount}"
+                               class="w-full p-1 border rounded-md text-gray-700 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-purple-400 quiz-question-count-input" disabled>
+                        <label for="qtl-${topic.topicId}" class="block mt-2 mb-1">Thời gian/câu (giây):</label>
+                        <input type="number" id="qtl-${topic.topicId}" value="${topic.quizSettings.timeLimit}" min="5"
+                               class="w-full p-1 border rounded-md text-gray-700 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-purple-400 quiz-time-limit-input" disabled>
+                    </div>
+                `;
+                multiTopicCheckboxesDiv.appendChild(div);
+
+                // Add event listeners to enable/disable inputs based on checkbox
+                const checkbox = div.querySelector('.topic-checkbox');
+                const questionCountInput = div.querySelector('.quiz-question-count-input');
+                const timeLimitInput = div.querySelector('.quiz-time-limit-input');
+
+                checkbox.addEventListener('change', (event) => {
+                    const isChecked = event.target.checked;
+                    questionCountInput.disabled = !isChecked;
+                    timeLimitInput.disabled = !isChecked;
+
+                    // Update max value for question count input based on vocab count
+                    if (isChecked) {
+                        questionCountInput.max = topic.vocabCount;
+                        if (parseInt(questionCountInput.value) > topic.vocabCount) {
+                            questionCountInput.value = topic.vocabCount;
+                        }
+                    } else {
+                        // When unchecked, reset to default or previous value if desired, or just keep disabled
+                        questionCountInput.value = topic.quizSettings.mixedQuizQuestionCount;
+                        timeLimitInput.value = topic.quizSettings.timeLimit;
+                    }
+                    // No need to saveAppData here directly, save will happen on input change or start quiz
+                });
+
+                // Add event listeners for inputs to save changes immediately
+                questionCountInput.addEventListener('change', (event) => {
+                    const topicId = topic.topicId;
+                    const categoryId = topic.categoryId;
+                    let value = parseInt(event.target.value);
+                    const max = parseInt(event.target.max);
+
+                    if (isNaN(value) || value < 1) {
+                        value = 1;
+                        showMessage("Số câu hỏi phải lớn hơn hoặc bằng 1.", "error", 2000);
+                    } else if (value > max) {
+                        value = max;
+                        showMessage(`Số câu hỏi không thể vượt quá số lượng từ vựng (${max}).`, "error", 2000);
+                    }
+                    event.target.value = value; // Update input value
+
+                    const category = appData.categories.find(cat => cat.id === categoryId);
+                    if (category) {
+                        const subTopic = category.topics.find(t => t.id === topicId);
+                        if (subTopic) {
+                            subTopic.quizSettings.mixedQuizQuestionCount = value;
+                            saveAppData();
+                        }
+                    }
+                });
+
+                timeLimitInput.addEventListener('change', (event) => {
+                    const topicId = topic.topicId;
+                    const categoryId = topic.categoryId;
+                    let value = parseInt(event.target.value);
+
+                    if (isNaN(value) || value < 5) {
+                        value = 5;
+                        showMessage("Thời gian giới hạn phải ít nhất 5 giây.", "error", 2000);
+                    }
+                    event.target.value = value; // Update input value
+
+                    const category = appData.categories.find(cat => cat.id === categoryId);
+                    if (category) {
+                        const subTopic = category.topics.find(t => t.id === topicId);
+                        if (subTopic) {
+                            subTopic.quizSettings.timeLimit = value;
+                            saveAppData();
+                        }
+                    }
+                });
+
+                // Set initial checked state based on currentQuiz.selectedMixedTopicIds (if re-rendering)
+                // And enable/disable inputs accordingly
+                if (currentQuiz.selectedMixedTopicIds.includes(topic.topicId)) {
+                    checkbox.checked = true;
+                    questionCountInput.disabled = false;
+                    timeLimitInput.disabled = false;
+                }
+            });
         }
 
+        startQuizBtn.addEventListener('click', startQuiz);
+        retakeQuizBtn.addEventListener('click', () => {
+            quizResultsDiv.classList.add('hidden');
+            quizSettingsDiv.classList.remove('hidden');
+            // Reset to default quiz type if retaking after a mixed quiz
+            if (currentQuiz.quizType === 'mixed') {
+                document.querySelector('input[name="quizMode"][value="mixed"]').checked = true;
+                renderMultiTopicCheckboxes();
+                singleTopicQuizOptionsDiv.classList.add('hidden');
+                mixedTopicQuizOptionsDiv.classList.remove('hidden');
+            } else {
+                 document.querySelector('input[name="quizMode"][value="single"]').checked = true;
+                 singleTopicQuizOptionsDiv.classList.remove('hidden');
+                 mixedTopicQuizOptionsDiv.classList.add('hidden');
+            }
+        });
 
-        /**
-         * Starts the quiz based on selected options.
-         */
-        startQuizBtn.addEventListener('click', () => {
-            const questionCount = parseInt(quizQuestionCountInput.value);
-            const timeLimit = parseInt(quizTimeLimitInput.value);
 
-            if (isNaN(questionCount) || questionCount <= 0) {
-                showMessage("Số lượng câu hỏi phải là một số dương.", "error");
+        async function startQuiz() {
+            if (currentQuiz.quizActive) {
+                showMessage("Bài kiểm tra đang diễn ra.", "error");
                 return;
             }
-            if (isNaN(timeLimit) || timeLimit < 5) {
-                showMessage("Thời gian giới hạn phải là ít nhất 5 giây.", "error");
-                return;
-            }
 
-            currentQuiz.quizTimeLimit = timeLimit;
-            currentQuiz.questions = []; // Reset questions
+            // Reset quiz state
+            currentQuiz.questions = [];
+            currentQuiz.currentQuestionIndex = 0;
+            currentQuiz.score = 0;
+            currentQuiz.mixedQuizTopicSettings = {}; // Clear previous settings
+            clearInterval(currentQuiz.timerInterval);
+            feedbackMessageDiv.classList.add('hidden');
+            detailedResultsDiv.innerHTML = '';
+            quizResultsDiv.classList.add('hidden');
+            cheatDetected = false; // Reset cheat detection status
 
-            let selectedVocab = [];
-            let sourceTopicIds = []; // To store topic IDs for mixed quiz results
+            const questionCountInputVal = parseInt(quizQuestionCountInput.value);
+            const timeLimitInputVal = parseInt(quizTimeLimitInput.value);
 
             if (currentQuiz.quizType === 'single') {
-                const category = appData.categories.find(cat => cat.id === selectCategoryForQuiz.value);
-                const topic = category?.topics.find(t => t.id === selectTopicForQuiz.value);
-
-                if (!topic) {
+                if (!currentTopicId) {
                     showMessage("Vui lòng chọn một chủ đề con để kiểm tra.", "error");
                     return;
                 }
-                if (topic.vocabulary.length === 0) {
-                    showMessage("Chủ đề này không có từ vựng nào. Vui lòng thêm từ.", "error");
+                const category = appData.categories.find(cat => cat.id === currentCategoryId);
+                const topic = category ? category.topics.find(t => t.id === currentTopicId) : null;
+
+                if (!topic || topic.vocabulary.length === 0) {
+                    showMessage("Chủ đề này chưa có từ vựng hoặc không tồn tại.", "error");
                     return;
                 }
 
-                currentTopicId = topic.id; // Set currentTopicId for single quiz
-                currentCategoryId = category.id; // Set currentCategoryId for single quiz
-                selectedVocab = [...topic.vocabulary]; // Copy vocabulary
-                sourceTopicIds = [topic.id];
+                if (questionCountInputVal < 1 || isNaN(questionCountInputVal)) {
+                    showMessage("Số lượng câu hỏi phải lớn hơn hoặc bằng 1.", "error");
+                    return;
+                }
+                if (timeLimitInputVal < 5 || isNaN(timeLimitInputVal)) {
+                    showMessage("Thời gian giới hạn mỗi câu phải ít nhất 5 giây.", "error");
+                    return;
+                }
+
+                const availableVocab = [...topic.vocabulary];
+                const numQuestions = Math.min(questionCountInputVal, availableVocab.length);
+
+                // Randomly select questions without repetition
+                while (currentQuiz.questions.length < numQuestions && availableVocab.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * availableVocab.length);
+                    currentQuiz.questions.push(availableVocab[randomIndex]);
+                    availableVocab.splice(randomIndex, 1); // Remove selected vocab to avoid repetition
+                }
+                currentQuiz.quizTimeLimit = timeLimitInputVal; // Set general time limit for single quiz
 
             } else { // Mixed quiz
-                const selectedCheckboxes = multiTopicCheckboxesDiv.querySelectorAll('input[type="checkbox"]:checked');
-                currentQuiz.selectedMixedTopicIds = Array.from(selectedCheckboxes).map(cb => cb.dataset.topicId);
-
-                if (currentQuiz.selectedMixedTopicIds.length === 0) {
-                    showMessage("Vui lòng chọn ít nhất một chủ đề con để kiểm tra ngẫu nhiên.", "error");
+                currentQuiz.selectedMixedTopicIds = [];
+                const selectedCheckboxes = multiTopicCheckboxesDiv.querySelectorAll('.topic-checkbox:checked');
+                if (selectedCheckboxes.length === 0) {
+                    showMessage("Vui lòng chọn ít nhất một chủ đề để kiểm tra hỗn hợp.", "error");
                     return;
                 }
 
-                currentQuiz.selectedMixedTopicIds.forEach(topicId => {
-                    appData.categories.forEach(category => {
-                        const topic = category.topics.find(t => t.id === topicId);
-                        if (topic) {
-                            selectedVocab.push(...topic.vocabulary.map(v => ({ ...v, topicId: topic.id, categoryId: category.id })));
+                let allSelectedVocab = [];
+                let totalQuestionsFromMixed = 0;
+
+                selectedCheckboxes.forEach(checkbox => {
+                    const topicId = checkbox.value;
+                    const categoryId = checkbox.dataset.categoryId; // Get category ID from data attribute
+
+                    const questionCountInput = document.getElementById(`qqc-${topicId}`);
+                    const timeLimitInput = document.getElementById(`qtl-${topicId}`);
+
+                    const topicQuestionCount = parseInt(questionCountInput.value);
+                    const topicTimeLimit = parseInt(timeLimitInput.value);
+
+                    if (isNaN(topicQuestionCount) || topicQuestionCount < 1) {
+                        showMessage(`Số câu hỏi cho chủ đề "${checkbox.nextElementSibling.textContent.split('(')[0].trim()}" phải lớn hơn hoặc bằng 1.`, "error");
+                        return; // Skip this topic if settings are invalid
+                    }
+                    if (isNaN(topicTimeLimit) || topicTimeLimit < 5) {
+                        showMessage(`Thời gian giới hạn cho chủ đề "${checkbox.nextElementSibling.textContent.split('(')[0].trim()}" phải ít nhất 5 giây.`, "error");
+                        return; // Skip this topic if settings are invalid
+                    }
+
+
+                    currentQuiz.selectedMixedTopicIds.push(topicId);
+                    currentQuiz.mixedQuizTopicSettings[topicId] = {
+                        questionCount: topicQuestionCount,
+                        timeLimit: topicTimeLimit
+                    };
+
+                    const category = appData.categories.find(cat => cat.id === categoryId);
+                    const topic = category ? category.topics.find(t => t.id === topicId) : null;
+
+                    if (topic && topic.vocabulary.length > 0) {
+                        const availableVocabForTopic = [...topic.vocabulary];
+                        const numToSelect = Math.min(topicQuestionCount, availableVocabForTopic.length);
+                        totalQuestionsFromMixed += numToSelect;
+
+                        for (let i = 0; i < numToSelect; i++) {
+                            const randomIndex = Math.floor(Math.random() * availableVocabForTopic.length);
+                            // Add categoryId and topicId to the vocab item for later tracking and time limit retrieval
+                            allSelectedVocab.push({
+                                ...availableVocabForTopic[randomIndex],
+                                _categoryId: categoryId,
+                                _topicId: topicId // Add topicId to each vocab question
+                            });
+                            availableVocabForTopic.splice(randomIndex, 1);
                         }
-                    });
+                    }
                 });
 
-                if (selectedVocab.length === 0) {
-                    showMessage("Các chủ đề đã chọn không có từ vựng nào. Vui lòng chọn chủ đề khác hoặc thêm từ.", "error");
+                if (totalQuestionsFromMixed === 0) {
+                    showMessage("Không có đủ từ vựng để tạo bài kiểm tra với cài đặt này hoặc các cài đặt không hợp lệ.", "error");
                     return;
                 }
+
+                // Shuffle all selected vocabulary for a truly mixed quiz
+                currentQuiz.questions = shuffleArray(allSelectedVocab);
+                // For mixed quiz, quizTimeLimit will be set per question, not globally
+                currentQuiz.quizTimeLimit = 0; // Reset as it's not a global limit for mixed quiz
             }
 
-            if (questionCount > selectedVocab.length) {
-                showMessage(`Số lượng câu hỏi (${questionCount}) vượt quá số từ vựng có sẵn (${selectedVocab.length}).`, "error");
+            if (currentQuiz.questions.length === 0) {
+                showMessage("Không có đủ từ vựng để tạo bài kiểm tra với cài đặt này.", "error");
                 return;
             }
 
-            // Generate questions
-            const shuffledVocab = shuffleArray(selectedVocab);
-            for (let i = 0; i < questionCount; i++) {
-                const vocab = shuffledVocab[i];
-                currentQuiz.questions.push({
-                    vocabId: vocab.id,
-                    english: vocab.english,
-                    vietnamese: vocab.vietnamese,
-                    example: vocab.example,
-                    isCorrect: false,
-                    userAnswer: '',
-                    categoryId: vocab.categoryId, // Store category ID for mixed quizzes too
-                    topicId: vocab.topicId // Store topic ID for mixed quizzes
-                });
-            }
-
-            currentQuiz.currentQuestionIndex = 0;
-            currentQuiz.score = 0;
+            totalQuizQuestionsSpan.textContent = currentQuiz.questions.length;
+            quizSettingsDiv.classList.add('hidden');
+            quizArea.classList.remove('hidden');
             currentQuiz.quizActive = true;
-            cheatDetected = false; // Reset cheat detection status
-            currentQuiz.initialWindowWidth = window.innerWidth; // Record initial dimensions
+
+            // Store initial window dimensions for cheat detection
+            currentQuiz.initialWindowWidth = window.innerWidth;
             currentQuiz.initialWindowHeight = window.innerHeight;
 
-            quizSettingsDiv.classList.add('hidden');
-            quizResultsDiv.classList.add('hidden'); // Hide results if visible
-            quizArea.classList.remove('hidden');
-            feedbackMessageDiv.classList.add('hidden'); // Hide feedback from previous attempts
-
-            displayQuestion();
-        });
-
-        /**
-         * Displays the current quiz question.
-         */
-        function displayQuestion() {
-            if (currentQuiz.currentQuestionIndex < currentQuiz.questions.length) {
-                const currentQ = currentQuiz.questions[currentQuiz.currentQuestionIndex];
-                currentQuestionNumberSpan.textContent = currentQuiz.currentQuestionIndex + 1;
-                totalQuizQuestionsSpan.textContent = currentQuiz.questions.length;
-                vietnameseQuestionSpan.textContent = currentQ.vietnamese;
-                englishAnswerInput.value = ''; // Clear previous answer
-                englishAnswerInput.focus();
-                feedbackMessageDiv.classList.add('hidden'); // Hide feedback
-
-                startTimer();
-            } else {
-                endQuiz(true); // All questions answered, save results
-            }
+            loadQuestion();
         }
 
-        /**
-         * Starts the timer for the current question.
-         */
-        function startTimer() {
+        function loadQuestion() {
             clearInterval(currentQuiz.timerInterval);
-            currentQuiz.timeRemaining = currentQuiz.quizTimeLimit;
-            quizTimerSpan.textContent = currentQuiz.timeRemaining;
+            feedbackMessageDiv.classList.add('hidden');
+            englishAnswerInput.value = '';
+            englishAnswerInput.focus();
 
-            currentQuiz.timerInterval = setInterval(() => {
-                currentQuiz.timeRemaining--;
+            if (currentQuiz.currentQuestionIndex < currentQuiz.questions.length) {
+                const question = currentQuiz.questions[currentQuiz.currentQuestionIndex];
+                currentQuestionNumberSpan.textContent = currentQuiz.currentQuestionIndex + 1;
+                vietnameseQuestionSpan.textContent = question.vietnamese;
+
+                // Set time limit based on quiz type
+                if (currentQuiz.quizType === 'mixed' && question._topicId && currentQuiz.mixedQuizTopicSettings[question._topicId]) {
+                    currentQuiz.timeRemaining = currentQuiz.mixedQuizTopicSettings[question._topicId].timeLimit;
+                } else {
+                    currentQuiz.timeRemaining = currentQuiz.quizTimeLimit;
+                }
                 quizTimerSpan.textContent = currentQuiz.timeRemaining;
 
-                if (currentQuiz.timeRemaining <= 0) {
-                    clearInterval(currentQuiz.timerInterval);
-                    checkAnswer(true); // Submit with no answer if time runs out
-                }
-            }, 1000);
-        }
-
-        /**
-         * Checks the user's answer.
-         * @param {boolean} isTimeUp - True if the answer is being checked because time ran out.
-         */
-        function checkAnswer(isTimeUp = false) {
-            clearInterval(currentQuiz.timerInterval); // Stop the timer
-            const currentQ = currentQuiz.questions[currentQuiz.currentQuestionIndex];
-            const userAnswer = englishAnswerInput.value.trim();
-            currentQ.userAnswer = userAnswer; // Store user's answer
-
-            let isCorrect = false;
-            if (isTimeUp) {
-                feedbackMessageDiv.textContent = `Hết giờ! Đáp án đúng là: "${currentQ.english}"`;
-                feedbackMessageDiv.className = 'text-center mt-4 text-lg font-semibold text-red-600';
-            } else if (userAnswer.toLowerCase() === currentQ.english.toLowerCase()) {
-                isCorrect = true;
-                currentQuiz.score++;
-                feedbackMessageDiv.textContent = "Chính xác!";
-                feedbackMessageDiv.className = 'text-center mt-4 text-lg font-semibold text-green-600';
+                currentQuiz.timerInterval = setInterval(() => {
+                    currentQuiz.timeRemaining--;
+                    quizTimerSpan.textContent = currentQuiz.timeRemaining;
+                    if (currentQuiz.timeRemaining <= 0) {
+                        clearInterval(currentQuiz.timerInterval);
+                        processAnswer(false, true); // Automatically submit as incorrect if time runs out
+                    }
+                }, 1000);
             } else {
-                feedbackMessageDiv.textContent = `Sai rồi. Đáp án đúng là: "${currentQ.english}"`;
-                feedbackMessageDiv.className = 'text-center mt-4 text-lg font-semibold text-red-600';
+                endQuiz();
             }
-            feedbackMessageDiv.classList.remove('hidden');
-            currentQ.isCorrect = isCorrect; // Store correctness for results
-
-            // Pause briefly before moving to next question
-            setTimeout(() => {
-                currentQuiz.currentQuestionIndex++;
-                displayQuestion();
-            }, 1500); // Display feedback for 1.5 seconds
         }
 
-        submitAnswerBtn.addEventListener('click', () => checkAnswer(false));
-        englishAnswerInput.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-                checkAnswer(false);
-            }
-        });
-        skipQuestionBtn.addEventListener('click', () => {
-            clearInterval(currentQuiz.timerInterval);
-            const currentQ = currentQuiz.questions[currentQuiz.currentQuestionIndex];
-            currentQ.userAnswer = '[Bỏ qua]';
-            currentQ.isCorrect = false;
-            feedbackMessageDiv.textContent = `Bạn đã bỏ qua. Đáp án đúng là: "${currentQ.english}"`;
-            feedbackMessageDiv.className = 'text-center mt-4 text-lg font-semibold text-gray-600';
-            feedbackMessageDiv.classList.remove('hidden');
-            setTimeout(() => {
-                currentQuiz.currentQuestionIndex++;
-                displayQuestion();
-            }, 1500);
+        submitAnswerBtn.addEventListener('click', () => {
+            if (!currentQuiz.quizActive) return;
+            const currentQuestion = currentQuiz.questions[currentQuiz.currentQuestionIndex];
+            const userAnswer = englishAnswerInput.value.trim().toLowerCase();
+            const correctAnswer = currentQuestion.english.toLowerCase();
+
+            processAnswer(userAnswer === correctAnswer);
         });
 
-        /**
-         * Ends the current quiz, displays results, and resets quiz state.
-         * @param {boolean} saveResults - True to save the quiz results, false otherwise (e.g., due to cheat detection).
-         */
-        function endQuiz(saveResults = true) {
+        englishAnswerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                if (!currentQuiz.quizActive) return;
+                const currentQuestion = currentQuiz.questions[currentQuiz.currentQuestionIndex];
+                const userAnswer = englishAnswerInput.value.trim().toLowerCase();
+                const correctAnswer = currentQuestion.english.toLowerCase();
+
+                processAnswer(userAnswer === correctAnswer);
+            }
+        });
+
+        skipQuestionBtn.addEventListener('click', () => {
+            if (!currentQuiz.quizActive) return;
+            processAnswer(false, true); // Mark as skipped
+        });
+
+        function processAnswer(isCorrect, isSkipped = false) {
+            clearInterval(currentQuiz.timerInterval); // Stop the timer
+
+            const currentQuestion = currentQuiz.questions[currentQuiz.currentQuestionIndex];
+            const userAnswer = englishAnswerInput.value.trim().toLowerCase();
+            const correctAnswer = currentQuestion.english.toLowerCase();
+
+            let resultClass = '';
+            let resultText = '';
+
+            // Find the actual vocab item in appData to update performance counters
+            let vocabToUpdate = null;
+            if (currentQuiz.quizType === 'single' && currentCategoryId && currentTopicId) {
+                const category = appData.categories.find(cat => cat.id === currentCategoryId);
+                const topic = category ? category.topics.find(t => t.id === currentTopicId) : null;
+                vocabToUpdate = topic ? topic.vocabulary.find(v => v.english === currentQuestion.english) : null;
+            } else if (currentQuiz.quizType === 'mixed' && currentQuestion._categoryId && currentQuestion._topicId) {
+                const category = appData.categories.find(cat => cat.id === currentQuestion._categoryId);
+                const topic = category ? category.topics.find(t => t.id === currentQuestion._topicId) : null;
+                vocabToUpdate = topic ? topic.vocabulary.find(v => v.english === currentQuestion.english) : null;
+            }
+
+            if (isSkipped) {
+                resultText = `<span class="font-bold text-gray-500">${currentQuestion.vietnamese}</span>: Bỏ qua. Đáp án đúng là <span class="font-bold text-blue-600">${currentQuestion.english}</span>`;
+                resultClass = 'bg-gray-100 text-gray-800';
+            } else if (isCorrect) {
+                currentQuiz.score++;
+                resultText = `<span class="font-bold text-green-600">${currentQuestion.vietnamese}</span>: Đúng! (<span class="font-bold">${currentQuestion.english}</span>)`;
+                resultClass = 'bg-green-100 text-green-700';
+                if (vocabToUpdate) vocabToUpdate.correctAttempts = (vocabToUpdate.correctAttempts || 0) + 1; // Update performance
+            } else {
+                resultText = `<span class="font-bold text-red-600">${currentQuestion.vietnamese}</span>: Sai. Đáp án của bạn: "${userAnswer}". Đáp án đúng: <span class="font-bold text-blue-600">${currentQuestion.english}</span>`;
+                resultClass = 'bg-red-100 text-red-700';
+                if (vocabToUpdate) vocabToUpdate.incorrectAttempts = (vocabToUpdate.incorrectAttempts || 0) + 1; // Update performance
+            }
+
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `p-3 rounded-md ${resultClass}`;
+            resultDiv.innerHTML = resultText;
+            detailedResultsDiv.appendChild(resultDiv);
+
+            saveAppData(); // Save updated performance data
+
+            currentQuiz.currentQuestionIndex++;
+            if (currentQuiz.currentQuestionIndex < currentQuiz.questions.length) {
+                // Show feedback message for a short period before loading next question
+                feedbackMessageDiv.innerHTML = `
+                    ${isCorrect ? '<span class="text-green-600">Đúng!</span>' : isSkipped ? '<span class="text-gray-600">Đã bỏ qua.</span>' : '<span class="text-red-600">Sai rồi!</span>'}
+                    ${isCorrect ? '' : `Đáp án đúng: <span class="font-bold text-blue-600">${currentQuestion.english}</span>`}
+                    ${currentQuestion.example ? `<br><span class="text-gray-500 italic">Ví dụ: ${currentQuestion.example}</span>` : ''}
+                `;
+                feedbackMessageDiv.classList.remove('hidden');
+                setTimeout(() => {
+                    loadQuestion();
+                }, 1500); // Wait 1.5 seconds before next question
+            } else {
+                endQuiz();
+            }
+        }
+
+        function endQuiz() {
             clearInterval(currentQuiz.timerInterval);
-            currentQuiz.quizActive = false; // Deactivate the quiz
-            englishAnswerInput.value = '';
-            feedbackMessageDiv.classList.add('hidden');
+            currentQuiz.quizActive = false;
             quizArea.classList.add('hidden');
             quizResultsDiv.classList.remove('hidden');
-            quizSettingsDiv.classList.remove('hidden'); // Show quiz settings again
-
-            if (cheatDetected) {
-                // If cheat detected, do not display normal results, and let showCheatDetectionMessage handle it.
-                quizResultsDiv.classList.add('hidden'); // Ensure results are hidden if cheat occurred
-                return; // Exit without showing normal results
-            }
 
             correctCountSpan.textContent = currentQuiz.score;
             totalCountSpan.textContent = currentQuiz.questions.length;
 
-            detailedResultsDiv.innerHTML = '';
-            currentQuiz.questions.forEach((q, index) => {
-                const resultItem = document.createElement('div');
-                resultItem.className = `p-3 rounded-md ${q.isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
-                resultItem.innerHTML = `
-                    <p><strong>Câu hỏi ${index + 1}:</strong> ${q.vietnamese}</p>
-                    <p><strong>Đáp án của bạn:</strong> ${q.userAnswer || '[Không có đáp án]'}</p>
-                    <p><strong>Đáp án đúng:</strong> ${q.english}</p>
-                    ${q.example ? `<p class="text-sm italic">Ví dụ: ${q.example}</p>` : ''}
-                    ${q.isCorrect ? '<p class="font-bold text-green-700">Chính xác!</p>' : '<p class="font-bold text-red-700">Sai.</p>'}
-                `;
-                detailedResultsDiv.appendChild(resultItem);
+            const quizResult = {
+                date: new Date().toISOString(),
+                score: currentQuiz.score,
+                total: currentQuiz.questions.length,
+                type: currentQuiz.quizType,
+                questions: currentQuiz.questions.map(q => ({
+                    english: q.english,
+                    vietnamese: q.vietnamese,
+                    example: q.example,
+                    _categoryId: q._categoryId, // Store category for mixed quiz questions
+                    _topicId: q._topicId // Store topic for mixed quiz questions
+                })) // Store all questions for detailed review
+            };
 
-                // Update vocabulary performance counters
-                const category = appData.categories.find(cat => cat.id === q.categoryId);
-                const topic = category?.topics.find(t => t.id === q.topicId);
+            if (currentQuiz.quizType === 'single') {
+                const category = appData.categories.find(cat => cat.id === currentCategoryId);
+                const topic = category ? category.topics.find(t => t.id === currentTopicId) : null;
                 if (topic) {
-                    const vocabItem = topic.vocabulary.find(v => v.id === q.vocabId);
-                    if (vocabItem) {
-                        if (q.isCorrect) {
-                            vocabItem.correctAttempts = (vocabItem.correctAttempts || 0) + 1;
-                        } else {
-                            vocabItem.incorrectAttempts = (vocabItem.incorrectAttempts || 0) + 1;
-                        }
-                    }
-                }
-            });
-
-            if (saveResults) {
-                // Save quiz results to the topic's history if applicable
-                const quizResult = {
-                    date: new Date().toISOString(),
-                    score: currentQuiz.score,
-                    total: currentQuiz.questions.length,
-                    type: currentQuiz.quizType,
-                    correctWords: currentQuiz.questions.filter(q => q.isCorrect).map(q => q.english),
-                    incorrectWords: currentQuiz.questions.filter(q => !q.isCorrect).map(q => q.english)
-                };
-
-                if (currentQuiz.quizType === 'single') {
-                    const category = appData.categories.find(cat => cat.id === currentCategoryId);
-                    const topic = category?.topics.find(t => t.id === currentTopicId);
-                    if (topic) {
-                        topic.results.push(quizResult);
-                    }
-                } else if (currentQuiz.quizType === 'mixed') {
-                    // For mixed quizzes, save result to each involved topic for comprehensive tracking
-                    currentQuiz.selectedMixedTopicIds.forEach(topicId => {
-                        appData.categories.forEach(category => {
-                            const topic = category.topics.find(t => t.id === topicId);
-                            if (topic) {
-                                topic.results.push({ ...quizResult, type: 'mixed-part' }); // Mark as part of mixed quiz
-                            }
-                        });
+                    topic.results.push({
+                        ...quizResult,
+                        topicId: topic.id,
+                        topicName: topic.name
                     });
                 }
-                saveAppData();
+            } else { // Mixed quiz
+                // To simplify, we'll save the mixed quiz result to the first category/topic's results array
+                // For a more robust solution, you might have a dedicated global 'mixedQuizResults' array
+                // or distribute the result object to each included topic's results array.
+                // For this example, we'll attach selectedTopics and mixedQuizSettings to the result object
+                // and push it to the *first* topic of the *first* category. This is a simplification.
+                if (appData.categories.length > 0 && appData.categories[0].topics.length > 0) {
+                    appData.categories[0].topics[0].results.push({
+                        ...quizResult,
+                        selectedTopics: currentQuiz.selectedMixedTopicIds,
+                        mixedQuizSettings: currentQuiz.mixedQuizTopicSettings // Stores settings for each selected topic
+                    });
+                }
             }
+            saveAppData(); // Save updated appData
 
-            // Reset current quiz state
-            currentQuiz = {
-                questions: [],
-                currentQuestionIndex: 0,
-                score: 0,
-                timerInterval: null,
-                timeRemaining: 0,
-                quizActive: false,
-                quizTimeLimit: quizTimeLimitInput.value,
-                quizType: 'single', // Reset to default
-                selectedMixedTopicIds: [],
-                initialWindowWidth: 0,
-                initialWindowHeight: 0
-            };
-            feedbackMessageDiv.classList.add('hidden');
-            englishAnswerInput.value = '';
-            // Re-render performance table if currently on that section and a topic is selected
-            if (document.getElementById('performance-section').classList.contains('active') && selectTopicForPerformance.value) {
-                renderPerformanceTable(selectTopicForPerformance.value);
-                renderVocabPerformanceTable(selectTopicForPerformance.value);
+            // Re-render performance table if currently on performance section and selected topic is relevant
+            if (document.getElementById('performance-section').classList.contains('active')) {
+                renderPerformanceTable();
+                renderVocabPerformanceTable();
             }
         }
 
-
-        retakeQuizBtn.addEventListener('click', () => {
-            quizResultsDiv.classList.add('hidden');
-            quizSettingsDiv.classList.remove('hidden'); // Show quiz settings again
-            // Reset selection for single topic quiz
-            selectTopicForQuiz.value = "";
+        // --- Cheat Detection ---
+        closeCheatMessageBtn.addEventListener('click', () => {
+            cheatDetectionMessage.classList.add('hidden');
+            // Allow restarting quiz if cheat detected and message closed
+            quizArea.classList.add('hidden');
+            quizSettingsDiv.classList.remove('hidden');
+            currentQuiz.quizActive = false; // Ensure quiz is not active
+            clearInterval(currentQuiz.timerInterval); // Clear any lingering timer
         });
 
-        // --- Performance Section Functions ---
+        function handleCheatDetection() {
+            if (!currentQuiz.quizActive || cheatDetected) return;
 
-        selectCategoryForPerformance.addEventListener('change', () => renderTopicSelects('performance'));
+            // Check if window is hidden or changed tab
+            if (document.hidden || !document.hasFocus()) {
+                cheatDetected = true;
+            }
 
-        selectTopicForPerformance.addEventListener('change', () => {
-            const selectedTopicId = selectTopicForPerformance.value;
-            if (selectedTopicId) {
+            // Check for window resize significantly
+            const currentWindowWidth = window.innerWidth;
+            const currentWindowHeight = window.innerHeight;
+            const widthThreshold = 0.10; // 10% change
+            const heightThreshold = 0.10; // 10% change
+
+            const widthDiff = Math.abs(currentWindowWidth - currentQuiz.initialWindowWidth) / currentQuiz.initialWindowWidth;
+            const heightDiff = Math.abs(currentWindowHeight - currentQuiz.initialWindowHeight) / currentQuiz.initialWindowHeight;
+
+            if (widthDiff > widthThreshold || heightDiff > heightThreshold) {
+                cheatDetected = true;
+            }
+
+            if (cheatDetected) {
+                clearInterval(currentQuiz.timerInterval);
+                currentQuiz.quizActive = false; // Deactivate quiz
+                cheatDetectionMessage.classList.remove('hidden'); // Show cheat message
+                quizArea.classList.add('hidden'); // Hide quiz area
+            }
+        }
+
+        // Listen for visibility changes (tab switching)
+        document.addEventListener('visibilitychange', handleCheatDetection);
+        // Listen for focus changes (window minimizing/maximizing)
+        window.addEventListener('focus', () => {
+            if (currentQuiz.quizActive && cheatDetected) {
+                handleCheatDetection(); // Re-check if focus returns and cheat was already detected
+            }
+        });
+        window.addEventListener('blur', handleCheatDetection);
+        // Listen for resize changes
+        window.addEventListener('resize', handleCheatDetection);
+
+        // --- Performance Section ---
+
+        /**
+         * Populates the category select dropdown for performance section.
+         */
+        function populateCategorySelectForPerformance() {
+            selectCategoryForPerformance.innerHTML = ''; // Clear existing options
+            appData.categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.name;
+                selectCategoryForPerformance.appendChild(option);
+            });
+            if (selectCategoryForPerformance.value) {
+                currentCategoryId = selectCategoryForPerformance.value;
+                populateTopicSelectForPerformance();
+            } else {
+                selectTopicForPerformance.innerHTML = '<option value="">-- Chọn chủ đề con để xem hiệu suất --</option>';
+            }
+        }
+
+        /**
+         * Populates the topic select dropdown based on the selected category for performance section.
+         */
+        function populateTopicSelectForPerformance() {
+            selectTopicForPerformance.innerHTML = '<option value="">-- Chọn chủ đề con để xem hiệu suất --</option>'; // Clear existing options
+            const selectedCategory = appData.categories.find(cat => cat.id === selectCategoryForPerformance.value);
+            if (selectedCategory) {
+                currentCategoryId = selectedCategory.id;
+                selectedCategory.topics.forEach(topic => {
+                    const option = document.createElement('option');
+                    option.value = topic.id;
+                    option.textContent = topic.name;
+                    selectTopicForPerformance.appendChild(option);
+                });
+            } else {
+                currentCategoryId = null;
+            }
+            currentTopicId = null; // Reset current topic ID for performance
+        }
+
+        selectCategoryForPerformance.addEventListener('change', populateTopicSelectForPerformance);
+        selectTopicForPerformance.addEventListener('change', function () {
+            currentTopicId = this.value;
+            if (currentTopicId) {
                 performanceContentDiv.classList.remove('hidden');
-                renderPerformanceTable(selectedTopicId);
-                renderVocabPerformanceTable(selectedTopicId);
+                renderPerformanceTable();
+                renderVocabPerformanceTable();
             } else {
                 performanceContentDiv.classList.add('hidden');
             }
@@ -1488,136 +1672,156 @@ run - chạy - He can run fast."
 
         /**
          * Renders the quiz history table for the selected topic.
-         * @param {string} topicId - The ID of the topic.
          */
-        function renderPerformanceTable(topicId) {
-            performanceTableBody.innerHTML = ''; // Clear existing
-            const category = appData.categories.find(cat => cat.id === selectCategoryForPerformance.value);
-            const topic = category?.topics.find(t => t.id === topicId);
+        function renderPerformanceTable() {
+            performanceTableBody.innerHTML = '';
+            const selectedCategory = appData.categories.find(cat => cat.id === selectCategoryForPerformance.value);
+            const selectedTopic = selectedCategory ? selectedCategory.topics.find(t => t.id === selectTopicForPerformance.value) : null;
 
-            if (topic && topic.results.length > 0) {
-                // Sort results by date descending
-                const sortedResults = [...topic.results].sort((a, b) => new Date(b.date) - new Date(a.date));
-
-                sortedResults.forEach((result, index) => {
-                    const row = performanceTableBody.insertRow();
-                    const date = new Date(result.date).toLocaleString('vi-VN', {
-                        year: 'numeric', month: 'numeric', day: 'numeric',
-                        hour: '2-digit', minute: '2-digit'
-                    });
-                    const scoreText = `${result.score}/${result.total}`;
-                    const quizType = result.type === 'single' ? 'Theo Chủ đề' : 'Ngẫu nhiên';
-
-                    row.innerHTML = `
-                        <td class="py-3 px-6">${date}</td>
-                        <td class="py-3 px-6">${scoreText}</td>
-                        <td class="py-3 px-6">${result.total}</td>
-                        <td class="py-3 px-6">${quizType}</td>
-                        <td class="py-3 px-6 text-center">
-                            <button data-result-index="${index}" class="view-detailed-result-btn bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded-md transition-colors duration-200">Xem chi tiết</button>
-                        </td>
-                    `;
-                });
-            } else {
-                performanceTableBody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-gray-500">Chưa có lịch sử bài kiểm tra cho chủ đề này.</td></tr>';
+            if (!selectedTopic) {
+                performanceTableBody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-gray-500">Vui lòng chọn một chủ đề con để xem lịch sử bài kiểm tra.</td></tr>';
+                return;
             }
 
-            document.querySelectorAll('.view-detailed-result-btn').forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const resultIndex = parseInt(event.target.dataset.resultIndex);
-                    showDetailedQuizResult(topicId, resultIndex);
+            if (selectedTopic.results.length === 0) {
+                performanceTableBody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-gray-500">Chưa có lịch sử bài kiểm tra cho chủ đề này.</td></tr>';
+                return;
+            }
+
+            selectedTopic.results.sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by date, newest first
+
+            selectedTopic.results.forEach(result => {
+                const row = performanceTableBody.insertRow();
+                const date = new Date(result.date).toLocaleString('vi-VN', {
+                    year: 'numeric', month: 'numeric', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+                const scoreText = `${result.score} / ${result.total}`;
+                let typeText = result.type === 'single' ? 'Đơn chủ đề' : 'Hỗn hợp';
+                let detailButtonHtml = '';
+
+                if (result.type === 'mixed') {
+                    typeText += ` (${result.selectedTopics ? result.selectedTopics.length : 0} chủ đề)`;
+                    detailButtonHtml = `<button class="view-mixed-quiz-details text-blue-500 hover:text-blue-700 font-semibold text-sm" data-result='${JSON.stringify(result)}'>Xem chi tiết</button>`;
+                }
+
+                row.innerHTML = `
+                    <td class="py-3 px-6 text-left">${date}</td>
+                    <td class="py-3 px-6 text-left">${scoreText}</td>
+                    <td class="py-3 px-6 text-left">${result.total}</td>
+                    <td class="py-3 px-6 text-left">${typeText}</td>
+                    <td class="py-3 px-6 text-center">${detailButtonHtml}</td>
+                `;
+            });
+
+            // Add event listeners for "Xem chi tiết" buttons
+            document.querySelectorAll('.view-mixed-quiz-details').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const resultData = JSON.parse(e.currentTarget.dataset.result);
+                    showMixedQuizDetailsModal(resultData);
                 });
             });
         }
 
         /**
          * Renders the vocabulary performance table for the selected topic.
-         * @param {string} topicId - The ID of the topic.
          */
-        function renderVocabPerformanceTable(topicId) {
-            vocabPerformanceTableBody.innerHTML = ''; // Clear existing
-            const category = appData.categories.find(cat => cat.id === selectCategoryForPerformance.value);
-            const topic = category?.topics.find(t => t.id === topicId);
+        function renderVocabPerformanceTable() {
+            vocabPerformanceTableBody.innerHTML = '';
+            const selectedCategory = appData.categories.find(cat => cat.id === selectCategoryForPerformance.value);
+            const selectedTopic = selectedCategory ? selectedCategory.topics.find(t => t.id === selectTopicForPerformance.value) : null;
 
-            if (topic && topic.vocabulary.length > 0) {
-                // Sort vocabulary by incorrect attempts (descending) or correct attempts (descending)
-                const sortedVocab = [...topic.vocabulary].sort((a, b) => {
-                    const totalA = (a.correctAttempts || 0) + (a.incorrectAttempts || 0);
-                    const totalB = (b.correctAttempts || 0) + (b.incorrectAttempts || 0);
-
-                    if (totalA === 0 && totalB === 0) return 0; // Both not attempted
-                    if (totalA === 0) return 1; // B has attempts, A doesn't
-                    if (totalB === 0) return -1; // A has attempts, B doesn't
-
-                    const ratioA = (a.correctAttempts || 0) / totalA;
-                    const ratioB = (b.correctAttempts || 0) / totalB;
-
-                    return ratioA - ratioB; // Sort by correctness ratio (ascending for "worst" words first)
-                });
-
-                sortedVocab.forEach(vocab => {
-                    const totalAttempts = (vocab.correctAttempts || 0) + (vocab.incorrectAttempts || 0);
-                    const correctRate = totalAttempts > 0 ? ((vocab.correctAttempts || 0) / totalAttempts * 100).toFixed(1) + '%' : 'N/A';
-
-                    const row = vocabPerformanceTableBody.insertRow();
-                    row.innerHTML = `
-                        <td class="py-3 px-6">${vocab.english}</td>
-                        <td class="py-3 px-6">${vocab.correctAttempts || 0}</td>
-                        <td class="py-3 px-6">${vocab.incorrectAttempts || 0}</td>
-                        <td class="py-3 px-6">${correctRate}</td>
-                    `;
-                });
-            } else {
-                vocabPerformanceTableBody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-gray-500">Chưa có dữ liệu hiệu suất từ vựng cho chủ đề này.</td></tr>';
-            }
-        }
-
-        /**
-         * Displays a modal with detailed results of a specific quiz. (Needs a modal implementation)
-         * @param {string} topicId - The ID of the topic.
-         * @param {number} resultIndex - The index of the result in the topic's results array.
-         */
-        function showDetailedQuizResult(topicId, resultIndex) {
-            const category = appData.categories.find(cat => cat.id === selectCategoryForPerformance.value);
-            const topic = category?.topics.find(t => t.id === topicId);
-
-            if (!topic || !topic.results[resultIndex]) {
-                showMessage("Không tìm thấy kết quả bài kiểm tra.", "error");
+            if (!selectedTopic) {
+                vocabPerformanceTableBody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-gray-500">Vui lòng chọn một chủ đề con để xem hiệu suất từ vựng.</td></tr>';
                 return;
             }
 
-            const result = topic.results[resultIndex];
+            if (selectedTopic.vocabulary.length === 0) {
+                vocabPerformanceTableBody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-gray-500">Chủ đề này chưa có từ vựng nào.</td></tr>';
+                return;
+            }
 
+            // Sort vocabulary by performance (e.g., lowest correct rate first)
+            const sortedVocab = [...selectedTopic.vocabulary].sort((a, b) => {
+                const totalA = a.correctAttempts + a.incorrectAttempts;
+                const totalB = b.correctAttempts + b.incorrectAttempts;
+
+                if (totalA === 0 && totalB === 0) return 0;
+                if (totalA === 0) return -1; // Words not attempted come first
+                if (totalB === 0) return 1;
+
+                const ratioA = a.correctAttempts / totalA;
+                const ratioB = b.correctAttempts / totalB;
+                return ratioA - ratioB; // Ascending order of correct ratio
+            });
+
+            sortedVocab.forEach(vocab => {
+                const totalAttempts = vocab.correctAttempts + vocab.incorrectAttempts;
+                const correctRate = totalAttempts > 0 ? ((vocab.correctAttempts / totalAttempts) * 100).toFixed(2) : 'N/A';
+
+                const row = vocabPerformanceTableBody.insertRow();
+                row.innerHTML = `
+                    <td class="py-3 px-6 text-left">${vocab.english}</td>
+                    <td class="py-3 px-6 text-left">${vocab.correctAttempts}</td>
+                    <td class="py-3 px-6 text-left">${vocab.incorrectAttempts}</td>
+                    <td class="py-3 px-6 text-left">${correctRate}%</td>
+                `;
+            });
+        }
+
+        /**
+         * Shows a modal with details of a mixed quiz.
+         * @param {object} resultData - The quiz result object.
+         */
+        function showMixedQuizDetailsModal(resultData) {
             const modalOverlay = document.createElement('div');
-            modalOverlay.className = 'modal-overlay show';
+            modalOverlay.className = 'modal-overlay';
             modalOverlay.innerHTML = `
                 <div class="modal-content">
                     <span class="modal-close-btn">&times;</span>
-                    <h3 class="text-2xl font-bold text-purple-700 mb-4 text-center">Chi Tiết Kết Quả Bài Kiểm Tra</h3>
-                    <p class="mb-2"><strong>Ngày:</strong> ${new Date(result.date).toLocaleString('vi-VN')}</p>
-                    <p class="mb-2"><strong>Điểm:</strong> ${result.score} / ${result.total}</p>
-                    <p class="mb-4"><strong>Loại bài:</strong> ${result.type === 'single' ? 'Theo Chủ đề' : 'Ngẫu nhiên'}</p>
-                    <h4 class="text-xl font-semibold text-gray-700 mb-3">Các từ đúng:</h4>
-                    <ul class="list-disc list-inside mb-4 max-h-40 overflow-y-auto bg-green-50 p-3 rounded">
-                        ${result.correctWords.length > 0 ? result.correctWords.map(word => `<li>${word}</li>`).join('') : '<li>Không có từ đúng.</li>'}
+                    <h3 class="text-2xl font-bold text-purple-700 mb-4">Chi Tiết Bài Kiểm Tra Hỗn Hợp</h3>
+                    <p class="text-lg mb-2">Ngày: ${new Date(resultData.date).toLocaleString('vi-VN')}</p>
+                    <p class="text-lg mb-4">Điểm: ${resultData.score} / ${resultData.total}</p>
+                    <h4 class="text-xl font-semibold text-purple-600 mb-2">Các Chủ Đề Đã Chọn:</h4>
+                    <ul class="list-disc list-inside space-y-1 max-h-40 overflow-y-auto bg-gray-50 p-3 rounded-md">
+                        ${resultData.selectedTopics.map(topicId => {
+                            const category = appData.categories.find(cat => cat.topics.some(t => t.id === topicId));
+                            const topic = category ? category.topics.find(t => t.id === topicId) : null;
+                            const settings = resultData.mixedQuizSettings[topicId];
+                            if (topic) {
+                                return `<li>${category.name} - ${topic.name} (${settings ? settings.questionCount : 'N/A'} câu, ${settings ? settings.timeLimit : 'N/A'} giây/câu)</li>`;
+                            }
+                            return '';
+                        }).join('')}
                     </ul>
-                    <h4 class="text-xl font-semibold text-gray-700 mb-3">Các từ sai:</h4>
-                    <ul class="list-disc list-inside max-h-40 overflow-y-auto bg-red-50 p-3 rounded">
-                        ${result.incorrectWords.length > 0 ? result.incorrectWords.map(word => `<li>${word}</li>`).join('') : '<li>Không có từ sai.</li>'}
+                    <h4 class="text-xl font-semibold text-purple-600 mt-4 mb-2">Các Câu Hỏi Trong Bài:</h4>
+                    <ul class="list-disc list-inside space-y-1 max-h-60 overflow-y-auto bg-gray-50 p-3 rounded-md">
+                        ${resultData.questions.map(q => `<li>${q.english} - ${q.vietnamese}</li>`).join('')}
                     </ul>
                 </div>
             `;
             document.body.appendChild(modalOverlay);
 
-            modalOverlay.querySelector('.modal-close-btn').addEventListener('click', () => {
+            // Animate in
+            setTimeout(() => {
+                modalOverlay.classList.add('show');
+            }, 10); // Small delay to allow reflow
+
+            const closeBtn = modalOverlay.querySelector('.modal-close-btn');
+            closeBtn.addEventListener('click', () => {
                 modalOverlay.classList.remove('show');
-                modalOverlay.addEventListener('transitionend', () => modalOverlay.remove(), { once: true });
+                setTimeout(() => {
+                    modalOverlay.remove();
+                }, 300); // Wait for transition to finish
             });
 
-            modalOverlay.addEventListener('click', (event) => {
-                if (event.target === modalOverlay) { // Clicked outside the modal content
+            // Close when clicking outside
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) {
                     modalOverlay.classList.remove('show');
-                    modalOverlay.addEventListener('transitionend', () => modalOverlay.remove(), { once: true });
+                    setTimeout(() => {
+                        modalOverlay.remove();
+                    }, 300);
                 }
             });
         }
@@ -1626,31 +1830,37 @@ run - chạy - He can run fast."
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
             loadAppData();
-            renderCategories();
-            renderCategorySelects();
-            setupEventListeners();
-            // Ensure the initial section is shown
-            showSection('topics-section');
+            // Initialize the first section based on active class in HTML or default
+            const initialActiveSection = document.querySelector('.section.active');
+            if (initialActiveSection) {
+                const navLinkForActiveSection = document.querySelector(`.nav-link[href="#${initialActiveSection.id}"]`);
+                if (navLinkForActiveSection) {
+                    navLinkForActiveSection.classList.add('active-nav-link');
+                }
+                // Manually trigger rendering for the initially active section
+                if (initialActiveSection.id === 'topics-section') {
+                    renderCategories();
+                    populateParentCategorySelect();
+                }
+            } else {
+                // Fallback to topics section if no active section defined
+                document.getElementById('topics-section').classList.add('active');
+                document.querySelector('.nav-link[href="#topics-section"]').classList.add('active-nav-link');
+                renderCategories();
+                populateParentCategorySelect();
+            }
+
+            // Initial rendering for quiz section if it's the default view on load
+            // This is important for mixed quiz checkboxes to show if selected as default quiz type
+            if (currentQuiz.quizType === 'mixed') {
+                singleTopicQuizOptionsDiv.classList.add('hidden');
+                mixedTopicQuizOptionsDiv.classList.remove('hidden');
+                renderMultiTopicCheckboxes();
+            } else {
+                singleTopicQuizOptionsDiv.classList.remove('hidden');
+                mixedTopicQuizOptionsDiv.classList.add('hidden');
+            }
         });
-
-        // Setup all event listeners
-        function setupEventListeners() {
-            // Navigation links
-            navLinks.forEach(link => {
-                link.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    const sectionId = event.target.getAttribute('href').substring(1);
-                    showSection(sectionId);
-                });
-            });
-
-            // Cheat Detection Event Listeners
-            document.addEventListener('visibilitychange', handleVisibilityChange);
-            window.addEventListener('resize', handleResize);
-            closeCheatMessageBtn.addEventListener('click', closeCheatDetectionMessage);
-
-            // Other general event listeners are already attached inline or within their functions
-        }
     </script>
 </body>
 </html>
