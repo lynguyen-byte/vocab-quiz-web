@@ -60,11 +60,11 @@
             z-index: 1000;
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
-            visibility: hidden; /* Added to hide completely when not shown */
+            visibility: hidden;
         }
         .modal-overlay.show {
             opacity: 1;
-            visibility: visible; /* Added to make visible */
+            visibility: visible;
         }
         .modal-content {
             background-color: white;
@@ -76,7 +76,7 @@
             transform: translateY(-20px);
             opacity: 0;
             transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-            position: relative; /* For close button */
+            position: relative;
         }
         .modal-overlay.show .modal-content {
             transform: translateY(0);
@@ -89,10 +89,10 @@
             font-size: 1.5rem;
             line-height: 1;
             cursor: pointer;
-            color: #4b5563; /* Tailwind gray-600 */
+            color: #4b5563;
         }
         .modal-close-btn:hover {
-            color: #1f2937; /* Tailwind gray-800 */
+            color: #1f2937;
         }
     </style>
 </head>
@@ -123,7 +123,7 @@
                         <label for="parentCategorySelect" class="block text-gray-700 text-sm font-bold mb-2">Chọn Mục Lớn:</label>
                         <select id="parentCategorySelect"
                                 class="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </select>
+                            </select>
                     </div>
                     <div class="flex-grow w-full">
                         <label for="newTopicName" class="block text-gray-700 text-sm font-bold mb-2">Tên Chủ Đề Con:</label>
@@ -149,7 +149,7 @@
                     <label for="selectCategoryForVocab" class="block text-gray-700 text-sm font-bold mb-2">Chọn Mục Lớn:</label>
                     <select id="selectCategoryForVocab"
                             class="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                    </select>
+                            </select>
                 </div>
                 <div>
                     <label for="selectTopicForVocab" class="block text-gray-700 text-sm font-bold mb-2">Chọn Chủ Đề Con:</label>
@@ -242,7 +242,7 @@
                             <label for="selectCategoryForQuiz" class="block text-gray-700 text-sm font-bold mb-2">Chọn Mục Lớn:</label>
                             <select id="selectCategoryForQuiz"
                                     class="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                            </select>
+                                    </select>
                         </div>
                         <div>
                             <label for="selectTopicForQuiz" class="block text-gray-700 text-sm font-bold mb-2">Chọn Chủ Đề Con Để Kiểm Tra:</label>
@@ -522,6 +522,8 @@
 
         function populateParentCategories(selectElementId, includeAllOption = false) {
             const selectElement = document.getElementById(selectElementId);
+            if (!selectElement) return; // Add a check to prevent errors if element doesn't exist yet
+
             selectElement.innerHTML = ''; // Clear existing options
 
             if (includeAllOption) {
@@ -541,6 +543,8 @@
 
         function populateTopicsForCategory(categoryName, selectElementId, includePlaceholder = false, allowNoTopic = false) {
             const selectElement = document.getElementById(selectElementId);
+            if (!selectElement) return; // Add a check to prevent errors if element doesn't exist yet
+
             selectElement.innerHTML = ''; // Clear existing options
 
             if (includePlaceholder) {
@@ -579,22 +583,19 @@
 
         function displayTopics() {
             const categoriesList = document.getElementById('categoriesList');
+            if (!categoriesList) return;
+
             categoriesList.innerHTML = '';
 
-            const hasTopics = Object.values(categories).some(topicArray => topicArray.length > 0);
-
-            if (!hasTopics) {
-                categoriesList.innerHTML = '<p class="text-gray-500 text-center col-span-full">Chưa có chủ đề nào được tạo.</p>';
-                return;
-            }
-
+            let hasAnyTopic = false;
             for (const categoryName in categories) {
-                if (categories[categoryName].length > 0) {
+                if (categories[categoryName] && categories[categoryName].length > 0) {
+                    hasAnyTopic = true;
                     const categoryDiv = document.createElement('div');
                     categoryDiv.className = 'bg-white p-6 rounded-lg shadow-md';
                     categoryDiv.innerHTML = `
-                        <h4 class="text-xl font-semibold text-purple-700 mb-4"><span class="math-inline">\{categoryName\}</h4\>
-<div class\="space\-y\-3" id\="topicList\-</span>{categoryName.replace(/\s/g, '_')}">
+                        <h4 class="text-xl font-semibold text-purple-700 mb-4">${categoryName}</h4>
+                        <div class="space-y-3" id="topicList-${categoryName.replace(/\s/g, '_')}">
                             ${categories[categoryName].map(topic => `
                                 <div class="flex justify-between items-center bg-purple-50 p-3 rounded-md shadow-sm">
                                     <span class="text-gray-800 font-medium">${topic.name}</span>
@@ -614,6 +615,10 @@
                 }
             }
 
+            if (!hasAnyTopic) {
+                categoriesList.innerHTML = '<p class="text-gray-500 text-center col-span-full">Chưa có chủ đề nào được tạo. Hãy thêm chủ đề mới!</p>';
+            }
+
             attachTopicEventListeners();
         }
 
@@ -628,8 +633,10 @@
 
         function displayVocabularies(topicId) {
             const currentTopicVocabTableBody = document.getElementById('currentTopicVocabTableBody');
-            currentTopicVocabTableBody.innerHTML = '';
             const currentVocabCount = document.getElementById('currentVocabCount');
+            if (!currentTopicVocabTableBody || !currentVocabCount) return;
+
+            currentTopicVocabTableBody.innerHTML = '';
             const topicVocabs = vocabularies.filter(vocab => vocab.topicId === topicId);
 
             currentVocabCount.textContent = topicVocabs.length;
@@ -643,11 +650,11 @@
                 const row = document.createElement('tr');
                 row.className = 'border-b border-gray-100 hover:bg-gray-50';
                 row.innerHTML = `
-                    <td class="py-3 px-6 text-left"><span class="math-inline">\{vocab\.english\}</td\>
-<td class\="py\-3 px\-6 text\-left"\></span>{vocab.vietnamese.join(', ')}</td>
-                    <td class="py-3 px-6 text-left"><span class="math-inline">\{vocab\.example \|\| ''\}</td\>
-<td class\="py\-3 px\-6 text\-center"\>
-<button class\="bg\-blue\-500 hover\:bg\-blue\-600 text\-white text\-xs px\-3 py\-1 rounded\-md mr\-2 edit\-vocab\-btn" data\-vocab\-id\="</span>{vocab.id}">
+                    <td class="py-3 px-6 text-left">${vocab.english}</td>
+                    <td class="py-3 px-6 text-left">${vocab.vietnamese.join(', ')}</td>
+                    <td class="py-3 px-6 text-left">${vocab.example || ''}</td>
+                    <td class="py-3 px-6 text-center">
+                        <button class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md mr-2 edit-vocab-btn" data-vocab-id="${vocab.id}">
                             Chỉnh sửa
                         </button>
                         <button class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md delete-vocab-btn" data-vocab-id="${vocab.id}">
@@ -670,7 +677,7 @@
         }
 
         function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('show');
+            document.getElementById(modalId)?.classList.remove('show');
         }
 
         // --- Modals ---
@@ -686,10 +693,10 @@
             document.getElementById('editTopicId').value = topicId;
             document.getElementById('editTopicNameInput').value = topic.name;
 
-            populateParentCategories('editParentCategorySelect', false); // No "select all" option for editing
+            populateParentCategories('editParentCategorySelect', false);
             document.getElementById('editParentCategorySelect').value = categoryName;
 
-            document.getElementById('editTopicModal').classList.add('show');
+            document.getElementById('editTopicModal')?.classList.add('show');
         }
 
         function openEditVocabModal(vocabId) {
@@ -704,11 +711,11 @@
             document.getElementById('editVietnameseMeaning').value = vocab.vietnamese.join(', ');
             document.getElementById('editExampleSentence').value = vocab.example || '';
 
-            document.getElementById('editVocabModal').classList.add('show');
+            document.getElementById('editVocabModal')?.classList.add('show');
         }
 
         // --- Category/Topic Management ---
-        document.getElementById('addTopicForm').addEventListener('submit', function(e) {
+        document.getElementById('addTopicForm')?.addEventListener('submit', function(e) {
             e.preventDefault();
             const parentCategory = document.getElementById('parentCategorySelect').value;
             const newTopicName = document.getElementById('newTopicName').value.trim();
@@ -723,7 +730,7 @@
             }
 
             if (categories[parentCategory].some(topic => topic.name.toLowerCase() === newTopicName.toLowerCase())) {
-                showMessage(`Chủ đề "<span class="math-inline">\{newTopicName\}" đã tồn tại trong mục "</span>{parentCategory}".`, 'warning');
+                showMessage(`Chủ đề "${newTopicName}" đã tồn tại trong mục "${parentCategory}".`, 'warning');
                 return;
             }
 
@@ -734,12 +741,12 @@
             categories[parentCategory].push(newTopic);
             saveToLocalStorage();
             displayTopics();
-            populateSelects(); // Update all selects
+            populateSelects();
             document.getElementById('newTopicName').value = '';
-            showMessage(`Đã thêm chủ đề "<span class="math-inline">\{newTopicName\}" vào mục "</span>{parentCategory}".`, 'success');
+            showMessage(`Đã thêm chủ đề "${newTopicName}" vào mục "${parentCategory}".`, 'success');
         });
 
-        document.getElementById('editTopicForm').addEventListener('submit', function(e) {
+        document.getElementById('editTopicForm')?.addEventListener('submit', function(e) {
             e.preventDefault();
             const topicId = document.getElementById('editTopicId').value;
             const newParentCategory = document.getElementById('editParentCategorySelect').value;
@@ -753,7 +760,6 @@
             let oldCategoryName = null;
             let oldTopicIndex = -1;
 
-            // Find the topic and its old category
             for (const catName in categories) {
                 const index = categories[catName].findIndex(t => t.id === topicId);
                 if (index !== -1) {
@@ -769,20 +775,18 @@
                 return;
             }
 
-            // Check if the new name already exists in the target category (if different from current topic)
             if (categories[newParentCategory].some(topic => topic.name.toLowerCase() === newTopicName.toLowerCase() && topic.id !== topicId)) {
-                showMessage(`Chủ đề "<span class="math-inline">\{newTopicName\}" đã tồn tại trong mục "</span>{newParentCategory}".`, 'warning');
+                showMessage(`Chủ đề "${newTopicName}" đã tồn tại trong mục "${newParentCategory}".`, 'warning');
                 return;
             }
 
             const updatedTopic = { ...categories[oldCategoryName][oldTopicIndex], name: newTopicName };
 
-            // If category changed, move the topic
             if (oldCategoryName !== newParentCategory) {
-                categories[oldCategoryName].splice(oldTopicIndex, 1); // Remove from old category
-                categories[newParentCategory].push(updatedTopic); // Add to new category
+                categories[oldCategoryName].splice(oldTopicIndex, 1);
+                categories[newParentCategory].push(updatedTopic);
             } else {
-                categories[oldCategoryName][oldTopicIndex] = updatedTopic; // Update in place
+                categories[oldCategoryName][oldTopicIndex] = updatedTopic;
             }
 
             saveToLocalStorage();
@@ -808,7 +812,6 @@
             }
 
             if (found) {
-                // Remove associated vocabularies
                 vocabularies = vocabularies.filter(vocab => vocab.topicId !== topicId);
                 saveToLocalStorage();
                 displayTopics();
@@ -820,23 +823,26 @@
         }
 
         // --- Vocabulary Management ---
-        document.getElementById('selectCategoryForVocab').addEventListener('change', function() {
+        document.getElementById('selectCategoryForVocab')?.addEventListener('change', function() {
             const categoryName = this.value;
             populateTopicsForCategory(categoryName, 'selectTopicForVocab', true);
-            document.getElementById('vocabContent').classList.add('hidden');
+            document.getElementById('vocabContent')?.classList.add('hidden');
         });
 
-        document.getElementById('selectTopicForVocab').addEventListener('change', function() {
+        document.getElementById('selectTopicForVocab')?.addEventListener('change', function() {
             const topicId = this.value;
-            if (topicId) {
-                document.getElementById('vocabContent').classList.remove('hidden');
-                displayVocabularies(topicId);
-            } else {
-                document.getElementById('vocabContent').classList.add('hidden');
+            const vocabContent = document.getElementById('vocabContent');
+            if (vocabContent) { // Ensure vocabContent exists before trying to manipulate
+                if (topicId) {
+                    vocabContent.classList.remove('hidden');
+                    displayVocabularies(topicId);
+                } else {
+                    vocabContent.classList.add('hidden');
+                }
             }
         });
 
-        document.getElementById('addSingleVocabForm').addEventListener('submit', function(e) {
+        document.getElementById('addSingleVocabForm')?.addEventListener('submit', function(e) {
             e.preventDefault();
             const topicId = document.getElementById('selectTopicForVocab').value;
             if (!topicId) {
@@ -853,7 +859,6 @@
                 return;
             }
 
-            // Check for duplicate English word within the same topic
             if (vocabularies.some(v => v.topicId === topicId && v.english.toLowerCase() === englishWord.toLowerCase())) {
                 showMessage(`Từ "${englishWord}" đã tồn tại trong chủ đề này.`, 'warning');
                 return;
@@ -865,7 +870,7 @@
                 english: englishWord,
                 vietnamese: vietnameseMeaning,
                 example: exampleSentence,
-                mastery: 0 // 0: new, 1: learning, 2: mastered
+                mastery: 0
             };
             vocabularies.push(newVocab);
             saveToLocalStorage();
@@ -875,7 +880,7 @@
             updatePerformanceStats();
         });
 
-        document.getElementById('bulkImportVocabForm').addEventListener('submit', function(e) {
+        document.getElementById('bulkImportVocabForm')?.addEventListener('submit', function(e) {
             e.preventDefault();
             const topicId = document.getElementById('selectTopicForVocab').value;
             if (!topicId) {
@@ -907,7 +912,7 @@
                             skippedWords.push(englishWord);
                         } else {
                             const newVocab = {
-                                id: `vocab-${Date.now() + importedCount}`, // Ensure unique ID even with fast additions
+                                id: `vocab-${Date.now() + importedCount}`,
                                 topicId: topicId,
                                 english: englishWord,
                                 vietnamese: vietnameseMeaning,
@@ -940,7 +945,7 @@
             updatePerformanceStats();
         });
 
-        document.getElementById('editVocabForm').addEventListener('submit', function(e) {
+        document.getElementById('editVocabForm')?.addEventListener('submit', function(e) {
             e.preventDefault();
             const vocabId = document.getElementById('editVocabId').value;
             const englishWord = document.getElementById('editEnglishWord').value.trim();
@@ -961,7 +966,6 @@
 
             const currentVocab = vocabularies[vocabIndex];
 
-            // Check for duplicate English word within the same topic, excluding the current word being edited
             if (vocabularies.some(v => v.topicId === currentVocab.topicId && v.english.toLowerCase() === englishWord.toLowerCase() && v.id !== vocabId)) {
                 showMessage(`Từ "${englishWord}" đã tồn tại trong chủ đề này.`, 'warning');
                 return;
@@ -974,7 +978,7 @@
                 example: exampleSentence
             };
             saveToLocalStorage();
-            displayVocabularies(currentVocab.topicId); // Refresh table for the current topic
+            displayVocabularies(currentVocab.topicId);
             closeModal('editVocabModal');
             showMessage(`Từ "${englishWord}" đã được cập nhật.`, 'success');
         });
@@ -991,9 +995,9 @@
             if (vocabularies.length < initialLength) {
                 saveToLocalStorage();
                 if (deletedVocab) {
-                    const currentTopicId = document.getElementById('selectTopicForVocab').value;
+                    const currentTopicId = document.getElementById('selectTopicForVocab')?.value;
                     if (currentTopicId === deletedVocab.topicId) {
-                        displayVocabularies(currentTopicId); // Refresh table if it's the current topic
+                        displayVocabularies(currentTopicId);
                     }
                 }
                 showMessage('Từ vựng đã được xóa.', 'success');
@@ -1010,31 +1014,33 @@
         let quizIncorrectAnswers = 0;
         let quizTimerInterval;
         let quizTimeLimit;
-        let quizDirection;
+        let currentQuizQuestionDirection; // Store the actual direction for the current question
         let quizWordsToReview = [];
 
         document.querySelectorAll('input[name="quizMode"]').forEach(radio => {
             radio.addEventListener('change', function() {
-                document.getElementById('singleTopicQuizOptions').classList.toggle('hidden', this.value !== 'single');
-                document.getElementById('mixedTopicQuizOptions').classList.toggle('hidden', this.value !== 'mixed');
+                document.getElementById('singleTopicQuizOptions')?.classList.toggle('hidden', this.value !== 'single');
+                document.getElementById('mixedTopicQuizOptions')?.classList.toggle('hidden', this.value !== 'mixed');
                 if (this.value === 'mixed') {
                     populateMultiTopicCheckboxes();
                 }
             });
         });
 
-        document.getElementById('selectCategoryForQuiz').addEventListener('change', function() {
+        document.getElementById('selectCategoryForQuiz')?.addEventListener('change', function() {
             const categoryName = this.value;
             populateTopicsForCategory(categoryName, 'selectTopicForQuiz', true);
         });
 
         function populateMultiTopicCheckboxes() {
             const multiTopicCheckboxes = document.getElementById('multiTopicCheckboxes');
+            if (!multiTopicCheckboxes) return;
+
             multiTopicCheckboxes.innerHTML = '';
             let hasTopics = false;
 
             for (const categoryName in categories) {
-                if (categories[categoryName].length > 0) {
+                if (categories[categoryName] && categories[categoryName].length > 0) {
                     hasTopics = true;
                     const categoryHeader = document.createElement('h5');
                     categoryHeader.className = 'col-span-full font-semibold text-gray-800 mt-2 mb-1';
@@ -1057,18 +1063,31 @@
             }
         }
 
-        document.getElementById('startQuizBtn').addEventListener('click', startQuiz);
+        document.getElementById('startQuizBtn')?.addEventListener('click', startQuiz);
 
         function startQuiz() {
-            const quizMode = document.querySelector('input[name="quizMode"]:checked').value;
-            const questionCount = parseInt(document.getElementById('quizQuestionCount').value);
-            quizTimeLimit = parseInt(document.getElementById('quizTimeLimit').value);
-            quizDirection = document.querySelector('input[name="quizDirection"]:checked').value;
+            const quizMode = document.querySelector('input[name="quizMode"]:checked')?.value;
+            const questionCountInput = document.getElementById('quizQuestionCount');
+            const quizTimeLimitInput = document.getElementById('quizTimeLimit');
+
+            const questionCount = parseInt(questionCountInput?.value || '0');
+            quizTimeLimit = parseInt(quizTimeLimitInput?.value || '30');
+            const quizDirectionSetting = document.querySelector('input[name="quizDirection"]:checked')?.value;
+
+            if (questionCount <= 0) {
+                showMessage('Số lượng câu hỏi phải lớn hơn 0.', 'warning');
+                return;
+            }
+            if (quizTimeLimit < 5) {
+                showMessage('Thời gian giới hạn phải ít nhất 5 giây.', 'warning');
+                return;
+            }
+
 
             let selectedTopicIds = [];
 
             if (quizMode === 'single') {
-                const singleTopicId = document.getElementById('selectTopicForQuiz').value;
+                const singleTopicId = document.getElementById('selectTopicForQuiz')?.value;
                 if (!singleTopicId) {
                     showMessage('Vui lòng chọn một chủ đề để kiểm tra.', 'warning');
                     return;
@@ -1090,23 +1109,22 @@
                 showMessage('Không có từ vựng nào trong (các) chủ đề đã chọn để kiểm tra.', 'warning');
                 return;
             }
-
-            // Shuffle and pick words
-            currentQuizVocabs = shuffleArray(availableVocabs).slice(0, questionCount);
-
-            if (currentQuizVocabs.length === 0) {
-                showMessage('Không đủ từ vựng để tạo bài kiểm tra với số lượng câu hỏi yêu cầu.', 'warning');
+            if (availableVocabs.length < questionCount) {
+                showMessage(`Không đủ từ vựng (${availableVocabs.length}) để tạo bài kiểm tra với ${questionCount} câu hỏi. Vui lòng giảm số lượng câu hỏi hoặc thêm từ vựng.`, 'warning');
                 return;
             }
+
+            currentQuizVocabs = shuffleArray(availableVocabs).slice(0, questionCount);
 
             currentQuestionIndex = 0;
             quizCorrectAnswers = 0;
             quizIncorrectAnswers = 0;
             quizWordsToReview = [];
+            currentQuizQuestionDirection = quizDirectionSetting; // This is the user's overall setting
 
-            document.getElementById('quizSettings').classList.add('hidden');
-            document.getElementById('quizArea').classList.remove('hidden');
-            document.getElementById('quizResults').classList.add('hidden');
+            document.getElementById('quizSettings')?.classList.add('hidden');
+            document.getElementById('quizArea')?.classList.remove('hidden');
+            document.getElementById('quizResults')?.classList.add('hidden');
 
             document.getElementById('totalQuizQuestions').textContent = currentQuizVocabs.length;
             document.getElementById('quizCorrectCount').textContent = quizCorrectAnswers;
@@ -1124,10 +1142,10 @@
         }
 
         function loadNextQuestion() {
-            clearInterval(quizTimerInterval); // Clear previous timer
-            document.getElementById('feedbackMessage').classList.add('hidden');
-            document.getElementById('submitAnswerBtn').classList.remove('hidden');
-            document.getElementById('nextQuestionBtn').classList.add('hidden');
+            clearInterval(quizTimerInterval);
+            document.getElementById('feedbackMessage')?.classList.add('hidden');
+            document.getElementById('submitAnswerBtn')?.classList.remove('hidden');
+            document.getElementById('nextQuestionBtn')?.classList.add('hidden');
             document.getElementById('englishAnswerInput').value = '';
             document.getElementById('englishAnswerInput').focus();
             document.getElementById('englishAnswerInput').classList.remove('border-green-500', 'border-red-500');
@@ -1137,20 +1155,20 @@
                 document.getElementById('currentQuestionNumber').textContent = currentQuestionIndex + 1;
 
                 let questionText = '';
-                if (quizDirection === 'viet-to-eng') {
+                let actualDirectionForThisQuestion = currentQuizQuestionDirection; // Use the global setting first
+
+                if (currentQuizQuestionDirection === 'random') {
+                    actualDirectionForThisQuestion = Math.random() < 0.5 ? 'viet-to-eng' : 'eng-to-viet';
+                }
+
+                if (actualDirectionForThisQuestion === 'viet-to-eng') {
                     questionText = currentVocab.vietnamese.join(', ');
-                } else if (quizDirection === 'eng-to-viet') {
+                } else { // eng-to-viet
                     questionText = currentVocab.english;
-                } else { // random
-                    if (Math.random() < 0.5) {
-                        questionText = currentVocab.vietnamese.join(', ');
-                        quizDirection = 'viet-to-eng'; // Store actual direction for this question
-                    } else {
-                        questionText = currentVocab.english;
-                        quizDirection = 'eng-to-viet'; // Store actual direction for this question
-                    }
                 }
                 document.getElementById('quizQuestion').textContent = questionText;
+                // Store the *actual* direction for this specific question to use in checkAnswer
+                currentVocab._actualQuizDirection = actualDirectionForThisQuestion;
                 startQuizTimer();
             } else {
                 endQuiz();
@@ -1160,6 +1178,8 @@
         function startQuizTimer() {
             let timeLeft = quizTimeLimit;
             const quizTimerDisplay = document.getElementById('quizTimer');
+            if (!quizTimerDisplay) return;
+
             quizTimerDisplay.textContent = timeLeft;
 
             quizTimerInterval = setInterval(() => {
@@ -1172,12 +1192,12 @@
             }, 1000);
         }
 
-        document.getElementById('submitAnswerBtn').addEventListener('click', () => checkAnswer(false));
-        document.getElementById('englishAnswerInput').addEventListener('keypress', function(e) {
+        document.getElementById('submitAnswerBtn')?.addEventListener('click', () => checkAnswer(false));
+        document.getElementById('englishAnswerInput')?.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                if (!document.getElementById('submitAnswerBtn').classList.contains('hidden')) {
+                if (!document.getElementById('submitAnswerBtn')?.classList.contains('hidden')) {
                     checkAnswer(false);
-                } else if (!document.getElementById('nextQuestionBtn').classList.contains('hidden')) {
+                } else if (!document.getElementById('nextQuestionBtn')?.classList.contains('hidden')) {
                     loadNextQuestion();
                 }
             }
@@ -1185,24 +1205,31 @@
 
         function checkAnswer(timeOut = false) {
             clearInterval(quizTimerInterval);
-            document.getElementById('submitAnswerBtn').classList.add('hidden');
-            document.getElementById('nextQuestionBtn').classList.remove('hidden');
+            document.getElementById('submitAnswerBtn')?.classList.add('hidden');
+            document.getElementById('nextQuestionBtn')?.classList.remove('hidden');
 
             const currentVocab = currentQuizVocabs[currentQuestionIndex];
             const userAnswer = document.getElementById('englishAnswerInput').value.trim();
             const feedbackMessage = document.getElementById('feedbackMessage');
+            const englishAnswerInput = document.getElementById('englishAnswerInput');
+
+            if (!feedbackMessage || !englishAnswerInput) return;
+
             feedbackMessage.classList.remove('hidden', 'text-green-600', 'text-red-600');
+            englishAnswerInput.classList.remove('border-green-500', 'border-red-500');
 
             let isCorrect = false;
             let correctAnswerDisplayed = '';
 
-            // Determine correct answer based on actual quiz direction for this question
-            if (quizDirection === 'viet-to-eng') {
+            // Use the actual direction stored for this question
+            const actualDirection = currentVocab._actualQuizDirection;
+
+            if (actualDirection === 'viet-to-eng') {
                 const correctEnglish = currentVocab.english.toLowerCase();
                 isCorrect = (userAnswer.toLowerCase() === correctEnglish);
                 correctAnswerDisplayed = currentVocab.english;
             } else { // eng-to-viet
-                const userMeanings = userAnswer.toLowerCase().split(',').map(m => m.trim());
+                const userMeanings = userAnswer.toLowerCase().split(',').map(m => m.trim()).filter(m => m !== '');
                 const correctMeanings = currentVocab.vietnamese.map(m => m.toLowerCase());
 
                 // Check if user's answer contains at least one of the correct meanings
@@ -1215,7 +1242,7 @@
                 quizCorrectAnswers++;
                 feedbackMessage.textContent = 'Chính xác!';
                 feedbackMessage.classList.add('text-green-600');
-                document.getElementById('englishAnswerInput').classList.add('border-green-500');
+                englishAnswerInput.classList.add('border-green-500');
             } else {
                 quizIncorrectAnswers++;
                 let message = 'Sai rồi.';
@@ -1224,14 +1251,14 @@
                 } else {
                     message = 'Sai rồi! Đáp án đúng là:';
                 }
-                feedbackMessage.innerHTML = `<span class="math-inline">\{message\} <span class\="font\-bold"\></span>{correctAnswerDisplayed}</span>.`;
+                feedbackMessage.innerHTML = `${message} <span class="font-bold">${correctAnswerDisplayed}</span>.`;
                 feedbackMessage.classList.add('text-red-600');
-                document.getElementById('englishAnswerInput').classList.add('border-red-500');
+                englishAnswerInput.classList.add('border-red-500');
 
                 quizWordsToReview.push({
                     english: currentVocab.english,
                     correctMeaning: currentVocab.vietnamese.join(', '),
-                    userAnswer: userAnswer
+                    userAnswer: userAnswer || '<Không trả lời>'
                 });
             }
 
@@ -1239,18 +1266,18 @@
             document.getElementById('quizIncorrectCount').textContent = quizIncorrectAnswers;
         }
 
-        document.getElementById('nextQuestionBtn').addEventListener('click', function() {
+        document.getElementById('nextQuestionBtn')?.addEventListener('click', function() {
             currentQuestionIndex++;
             loadNextQuestion();
         });
 
-        document.getElementById('endQuizBtn').addEventListener('click', endQuiz);
+        document.getElementById('endQuizBtn')?.addEventListener('click', endQuiz);
 
         function endQuiz() {
             clearInterval(quizTimerInterval);
-            document.getElementById('quizArea').classList.add('hidden');
-            document.getElementById('quizResults').classList.remove('hidden');
-            document.getElementById('quizSettings').classList.remove('hidden'); // Show settings for next quiz
+            document.getElementById('quizArea')?.classList.add('hidden');
+            document.getElementById('quizResults')?.classList.remove('hidden');
+            document.getElementById('quizSettings')?.classList.remove('hidden');
 
             const totalQuestions = currentQuizVocabs.length;
             const score = totalQuestions > 0 ? ((quizCorrectAnswers / totalQuestions) * 100).toFixed(0) : 0;
@@ -1260,14 +1287,13 @@
             document.getElementById('resultsCorrect').textContent = quizCorrectAnswers;
             document.getElementById('resultsIncorrect').textContent = quizIncorrectAnswers;
 
-            // Save quiz result
             quizResults.push({
                 timestamp: new Date().toISOString(),
                 totalQuestions: totalQuestions,
                 correct: quizCorrectAnswers,
                 incorrect: quizIncorrectAnswers,
                 score: parseFloat(score),
-                wordsToReview: quizWordsToReview.map(w => w.english) // Only store English word for simplicity
+                wordsToReview: quizWordsToReview.map(w => ({english: w.english, userAnswer: w.userAnswer}))
             });
             saveToLocalStorage();
             updatePerformanceStats();
@@ -1277,6 +1303,8 @@
 
         function displayWordsToReview() {
             const wordsToReviewTableBody = document.getElementById('wordsToReviewTableBody');
+            if (!wordsToReviewTableBody) return;
+
             wordsToReviewTableBody.innerHTML = '';
 
             if (quizWordsToReview.length === 0) {
@@ -1288,23 +1316,22 @@
                 const row = document.createElement('tr');
                 row.className = 'border-b border-gray-100 hover:bg-gray-50';
                 row.innerHTML = `
-                    <td class="py-3 px-6 text-left"><span class="math-inline">\{word\.english\}</td\>
-<td class\="py\-3 px\-6 text\-left text\-green\-600 font\-medium"\></span>{word.correctMeaning}</td>
-                    <td class="py-3 px-6 text-left text-red-600">${word.userAnswer || '<span class="text-gray-400">Không trả lời</span>'}</td>
+                    <td class="py-3 px-6 text-left">${word.english}</td>
+                    <td class="py-3 px-6 text-left text-green-600 font-medium">${word.correctMeaning}</td>
+                    <td class="py-3 px-6 text-left text-red-600">${word.userAnswer}</td>
                 `;
                 wordsToReviewTableBody.appendChild(row);
             });
         }
 
-        document.getElementById('retakeQuizBtn').addEventListener('click', function() {
-            // Re-use currentQuizVocabs to retake the same quiz
+        document.getElementById('retakeQuizBtn')?.addEventListener('click', function() {
             currentQuestionIndex = 0;
             quizCorrectAnswers = 0;
             quizIncorrectAnswers = 0;
             quizWordsToReview = [];
 
-            document.getElementById('quizResults').classList.add('hidden');
-            document.getElementById('quizArea').classList.remove('hidden');
+            document.getElementById('quizResults')?.classList.add('hidden');
+            document.getElementById('quizArea')?.classList.remove('hidden');
 
             document.getElementById('totalQuizQuestions').textContent = currentQuizVocabs.length;
             document.getElementById('quizCorrectCount').textContent = quizCorrectAnswers;
@@ -1313,11 +1340,17 @@
             loadNextQuestion();
         });
 
-        document.getElementById('newQuizBtn').addEventListener('click', function() {
-            document.getElementById('quizResults').classList.add('hidden');
-            document.getElementById('quizArea').classList.add('hidden');
-            document.getElementById('quizSettings').classList.remove('hidden');
-            // Reset quiz settings selections if needed, or let them persist
+        document.getElementById('newQuizBtn')?.addEventListener('click', function() {
+            document.getElementById('quizResults')?.classList.add('hidden');
+            document.getElementById('quizArea')?.classList.add('hidden');
+            document.getElementById('quizSettings')?.classList.remove('hidden');
+            // Re-populate select topics for quiz section
+            populateParentCategories('selectCategoryForQuiz', true);
+            const currentCategoryQuiz = document.getElementById('selectCategoryForQuiz').value;
+            populateTopicsForCategory(currentCategoryQuiz, 'selectTopicForQuiz', true);
+            if (document.querySelector('input[name="quizMode"]:checked')?.value === 'mixed') {
+                populateMultiTopicCheckboxes();
+            }
         });
 
         // --- Performance Section ---
@@ -1330,4 +1363,168 @@
         }
 
         function displayTopicPerformance() {
-            const
+            const topicPerformanceList = document.getElementById('topicPerformanceList');
+            if (!topicPerformanceList) return;
+
+            topicPerformanceList.innerHTML = '';
+
+            const allTopics = Object.values(categories).flat();
+            if (allTopics.length === 0) {
+                topicPerformanceList.innerHTML = '<p class="text-gray-500 text-center">Chưa có chủ đề nào để hiển thị hiệu suất.</p>';
+                return;
+            }
+
+            allTopics.forEach(topic => {
+                const topicVocabs = vocabularies.filter(vocab => vocab.topicId === topic.id);
+                // Filter quiz results to include only those where *any* word from the topic was part of the quiz
+                const quizAttemptsForTopic = quizResults.filter(result =>
+                    result.wordsToReview.some(wordInReview =>
+                        topicVocabs.some(topicVocab => topicVocab.english === wordInReview.english)
+                    )
+                );
+
+                const totalWordsInTopic = topicVocabs.length;
+                let averageScore = 0;
+                if (quizAttemptsForTopic.length > 0) {
+                    const totalScores = quizAttemptsForTopic.reduce((sum, result) => sum + result.score, 0);
+                    averageScore = (totalScores / quizAttemptsForTopic.length).toFixed(1);
+                }
+
+                const topicDiv = document.createElement('div');
+                topicDiv.className = 'bg-white p-4 rounded-lg shadow-md flex justify-between items-center';
+                topicDiv.innerHTML = `
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800">${topic.name}</h4>
+                        <p class="text-gray-600 text-sm">Từ vựng: ${totalWordsInTopic}</p>
+                        <p class="text-gray-600 text-sm">Số lần kiểm tra: ${quizAttemptsForTopic.length}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-gray-600 text-sm">Điểm trung bình:</p>
+                        <p class="text-2xl font-bold ${averageScore >= 70 ? 'text-green-600' : averageScore >= 50 ? 'text-yellow-600' : 'text-red-600'}">
+                            ${averageScore}%
+                        </p>
+                    </div>
+                `;
+                topicPerformanceList.appendChild(topicDiv);
+            });
+        }
+
+
+        // --- Navigation ---
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                document.querySelectorAll('.nav-link').forEach(nav => {
+                    nav.classList.remove('active-nav-link');
+                });
+
+                const targetSectionId = this.getAttribute('href').substring(1);
+                const targetSection = document.getElementById(targetSectionId);
+                if (targetSection) { // Check if element exists
+                    targetSection.classList.add('active');
+                }
+                this.classList.add('active-nav-link');
+
+                // Re-populate selects and display lists when navigating to relevant sections
+                if (targetSectionId === 'topics-section') {
+                    populateParentCategories('parentCategorySelect', false);
+                    displayTopics(); // Call displayTopics *after* populating categories
+                } else if (targetSectionId === 'vocabulary-management-section') {
+                    populateParentCategories('selectCategoryForVocab', true);
+                    const currentCategoryVocab = document.getElementById('selectCategoryForVocab')?.value;
+                    if (currentCategoryVocab) { // Only populate topics if a category is selected
+                        populateTopicsForCategory(currentCategoryVocab, 'selectTopicForVocab', true);
+                    } else { // Clear topics if no category selected
+                        document.getElementById('selectTopicForVocab').innerHTML = '<option value="">-- Chọn chủ đề con để quản lý từ vựng --</option>';
+                    }
+                    document.getElementById('vocabContent')?.classList.add('hidden'); // Always hide initially
+                } else if (targetSectionId === 'quiz-section') {
+                    populateParentCategories('selectCategoryForQuiz', true);
+                    const currentCategoryQuiz = document.getElementById('selectCategoryForQuiz')?.value;
+                    if (currentCategoryQuiz) { // Only populate topics if a category is selected
+                        populateTopicsForCategory(currentCategoryQuiz, 'selectTopicForQuiz', true);
+                    } else { // Clear topics if no category selected
+                         document.getElementById('selectTopicForQuiz').innerHTML = '<option value="">-- Chọn chủ đề con để bắt đầu kiểm tra --</option>';
+                    }
+                    if (document.querySelector('input[name="quizMode"]:checked')?.value === 'mixed') {
+                        populateMultiTopicCheckboxes();
+                    }
+                    document.getElementById('quizArea')?.classList.add('hidden');
+                    document.getElementById('quizResults')?.classList.add('hidden');
+                    document.getElementById('quizSettings')?.classList.remove('hidden');
+                } else if (targetSectionId === 'performance-section') {
+                    updatePerformanceStats();
+                }
+            });
+        });
+
+        function populateSelects() {
+            // Ensure initial population for all relevant selects
+            populateParentCategories('parentCategorySelect', false);
+            populateParentCategories('selectCategoryForVocab', true);
+            populateParentCategories('selectCategoryForQuiz', true);
+
+            // Trigger change event for vocab management select to populate its topics
+            const selectCategoryForVocab = document.getElementById('selectCategoryForVocab');
+            if (selectCategoryForVocab && selectCategoryForVocab.value) {
+                selectCategoryForVocab.dispatchEvent(new Event('change'));
+            } else {
+                 document.getElementById('selectTopicForVocab').innerHTML = '<option value="">-- Chọn chủ đề con để quản lý từ vựng --</option>';
+            }
+
+            // Trigger change event for quiz select to populate its topics
+            const selectCategoryForQuiz = document.getElementById('selectCategoryForQuiz');
+            if (selectCategoryForQuiz && selectCategoryForQuiz.value) {
+                selectCategoryForQuiz.dispatchEvent(new Event('change'));
+            } else {
+                 document.getElementById('selectTopicForQuiz').innerHTML = '<option value="">-- Chọn chủ đề con để bắt đầu kiểm tra --</option>';
+            }
+
+            populateMultiTopicCheckboxes();
+        }
+
+        // Initial setup on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // First, populate initial categories in the "Add Topic" form
+            populateParentCategories('parentCategorySelect', false);
+
+            // Then, display topics for the topics section
+            displayTopics();
+
+            // Then, populate all other dynamic selects
+            populateSelects();
+
+            // Set up initial active section and navigation link
+            const initialSectionId = window.location.hash ? window.location.hash.substring(1) : 'topics-section';
+            const initialNavLink = document.querySelector(`a[href="#${initialSectionId}"]`);
+
+            // Ensure the correct section is active on load
+            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+            const targetSection = document.getElementById(initialSectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+
+            // Ensure the correct nav link is active
+            document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active-nav-link'));
+            if (initialNavLink) {
+                initialNavLink.classList.add('active-nav-link');
+            }
+
+            // Special handling for sections that need initial data display
+            if (initialSectionId === 'vocabulary-management-section') {
+                const selectedTopic = document.getElementById('selectTopicForVocab')?.value;
+                if (selectedTopic) {
+                    document.getElementById('vocabContent')?.classList.remove('hidden');
+                    displayVocabularies(selectedTopic);
+                }
+            } else if (initialSectionId === 'performance-section') {
+                updatePerformanceStats();
+            }
+        });
+    </script>
+</body>
+</html>
