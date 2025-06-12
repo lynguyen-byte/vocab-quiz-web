@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -46,6 +47,7 @@
         .multi-select-option input[type="checkbox"] {
             @apply mr-2;
         }
+
         /* Modal specific styles */
         .modal-overlay {
             position: fixed;
@@ -60,12 +62,12 @@
             z-index: 1000;
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
-            visibility: hidden;
         }
+
         .modal-overlay.show {
             opacity: 1;
-            visibility: visible;
         }
+
         .modal-content {
             background-color: white;
             padding: 2rem;
@@ -76,12 +78,14 @@
             transform: translateY(-20px);
             opacity: 0;
             transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-            position: relative;
+            position: relative; /* For close button */
         }
+
         .modal-overlay.show .modal-content {
             transform: translateY(0);
             opacity: 1;
         }
+
         .modal-close-btn {
             position: absolute;
             top: 0.75rem;
@@ -89,10 +93,10 @@
             font-size: 1.5rem;
             line-height: 1;
             cursor: pointer;
-            color: #4b5563;
+            color: #4b5563; /* Tailwind gray-600 */
         }
         .modal-close-btn:hover {
-            color: #1f2937;
+            color: #1f2937; /* Tailwind gray-800 */
         }
     </style>
 </head>
@@ -113,7 +117,6 @@
     </nav>
     <main class="container mx-auto mt-8 p-6 bg-white rounded-lg shadow-xl flex-grow">
         <div id="generalMessage" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
-
         <section id="topics-section" class="section active">
             <h2 class="text-3xl font-semibold text-purple-700 mb-6 border-b-2 pb-2 border-purple-300">Quản Lý Chủ Đề</h2>
             <div class="bg-purple-50 p-6 rounded-lg shadow-inner mb-8">
@@ -128,7 +131,7 @@
                     <div class="flex-grow w-full">
                         <label for="newTopicName" class="block text-gray-700 text-sm font-bold mb-2">Tên Chủ Đề Con:</label>
                         <input type="text" id="newTopicName" placeholder="Ví dụ: Level 1, Idioms"
-                               class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                               class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                     </div>
                     <button type="submit"
                             class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 shadow-md">
@@ -138,10 +141,9 @@
             </div>
             <h3 class="text-2xl font-medium text-purple-600 mb-4">Các Chủ Đề Hiện Có</h3>
             <div id="categoriesList" class="space-y-8">
-                <p class="text-gray-500 text-center col-span-full">Đang tải chủ đề...</p>
+                <p class="text-gray-500 text-center col-span-full">Chưa có chủ đề nào. Hãy thêm chủ đề mới!</p>
             </div>
         </section>
-
         <section id="vocabulary-management-section" class="section">
             <h2 class="text-3xl font-semibold text-purple-700 mb-6 border-b-2 pb-2 border-purple-300">Quản Lý Từ Vựng</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -149,7 +151,7 @@
                     <label for="selectCategoryForVocab" class="block text-gray-700 text-sm font-bold mb-2">Chọn Mục Lớn:</label>
                     <select id="selectCategoryForVocab"
                             class="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                            </select>
+                        </select>
                 </div>
                 <div>
                     <label for="selectTopicForVocab" class="block text-gray-700 text-sm font-bold mb-2">Chọn Chủ Đề Con:</label>
@@ -169,7 +171,7 @@
                                    class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
                         </div>
                         <div>
-                            <label for="vietnameseMeaning" class="block text-gray-700 text-sm font-bold mb-2">Nghĩa Tiếng Việt (phân tách bằng dấu phẩy):</label>
+                            <label for="vietnameseMeaning" class="block text-gray-700 text-sm font-bold mb-2">Nghĩa Tiếng Việt:</label>
                             <input type="text" id="vietnameseMeaning" placeholder="Ví dụ: đẹp, xinh đẹp"
                                    class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
                         </div>
@@ -186,12 +188,11 @@
                         </div>
                     </form>
                 </div>
-
                 <div class="bg-yellow-50 p-6 rounded-lg shadow-inner mb-8">
                     <h3 class="text-2xl font-medium text-yellow-700 mb-4">Nhập Từ Vựng Hàng Loạt</h3>
-                    <p class="text-gray-600 mb-4">Nhập mỗi từ trên một dòng theo định dạng: <code class="bg-gray-200 p-1 rounded">English Word - Vietnamese Meaning (phân tách bằng dấu phẩy) - Example Sentence (optional)</code></p>
+                    <p class="text-gray-600 mb-4">Nhập mỗi từ trên một dòng theo định dạng: <code class="bg-gray-200 p-1 rounded">English Word - Vietnamese Meaning - Example Sentence (optional)</code></p>
                     <form id="bulkImportVocabForm">
-                        <textarea id="bulkVocabInput" rows="8" placeholder="Ví dụ:apple - quả táo, táo tây - I like to eat an apple.book - cuốn sách - Read a good book.run - chạy - He can run fast."
+                        <textarea id="bulkVocabInput" rows="8" placeholder="Ví dụ:apple - quả táo - I like to eat an apple.book - cuốn sách - Read a good book.run - chạy - He can run fast."
                                   class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent mb-4"></textarea>
                         <div class="text-right">
                             <button type="submit"
@@ -201,7 +202,6 @@
                         </div>
                     </form>
                 </div>
-
                 <h3 class="text-2xl font-medium text-purple-600 mb-4">Từ Vựng Trong Chủ Đề Này (<span id="currentVocabCount">0</span> từ)</h3>
                 <div class="overflow-x-auto">
                     <table class="min-w-full bg-white rounded-lg shadow-md">
@@ -220,12 +220,11 @@
                 </div>
             </div>
         </section>
-
         <section id="quiz-section" class="section">
             <h2 class="text-3xl font-semibold text-purple-700 mb-6 border-b-2 pb-2 border-purple-300">Kiểm Tra Từ Vựng</h2>
             <div class="mb-6 bg-purple-50 p-6 rounded-lg shadow-inner">
                 <h3 class="text-2xl font-medium text-purple-700 mb-4">Chọn Loại Bài Kiểm Tra</h3>
-                <div class="flex flex-wrap items-center space-x-4 mb-4">
+                <div class="flex items-center space-x-4 mb-4">
                     <label class="inline-flex items-center">
                         <input type="radio" name="quizMode" value="single" checked class="form-radio text-purple-600 h-5 w-5">
                         <span class="ml-2 text-gray-700">Kiểm tra theo Chủ đề</span>
@@ -235,14 +234,13 @@
                         <span class="ml-2 text-gray-700">Kiểm tra ngẫu nhiên từ nhiều Chủ đề</span>
                     </label>
                 </div>
-
                 <div id="singleTopicQuizOptions">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label for="selectCategoryForQuiz" class="block text-gray-700 text-sm font-bold mb-2">Chọn Mục Lớn:</label>
                             <select id="selectCategoryForQuiz"
                                     class="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                    </select>
+                                </select>
                         </div>
                         <div>
                             <label for="selectTopicForQuiz" class="block text-gray-700 text-sm font-bold mb-2">Chọn Chủ Đề Con Để Kiểm Tra:</label>
@@ -253,14 +251,12 @@
                         </div>
                     </div>
                 </div>
-
                 <div id="mixedTopicQuizOptions" class="hidden">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Chọn các Chủ Đề Con để ôn tập:</label>
                     <div id="multiTopicCheckboxes" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 bg-white p-4 rounded-lg border border-gray-200 max-h-60 overflow-y-auto">
                         <p class="text-gray-500 col-span-full">Chưa có chủ đề nào để chọn.</p>
                     </div>
                 </div>
-
                 <div id="quizSettings" class="mt-6">
                     <h3 class="text-2xl font-medium text-purple-700 mb-4">Cài Đặt Bài Kiểm Tra</h3>
                     <div class="mb-4">
@@ -273,866 +269,263 @@
                         <input type="number" id="quizTimeLimit" value="30" min="5"
                                class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Hướng kiểm tra:</label>
-                        <div class="flex items-center space-x-4">
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="quizDirection" value="viet-to-eng" checked class="form-radio text-purple-600 h-5 w-5">
-                                <span class="ml-2 text-gray-700">Việt - Anh</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="quizDirection" value="eng-to-viet" class="form-radio text-purple-600 h-5 w-5">
-                                <span class="ml-2 text-gray-700">Anh - Việt</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="quizDirection" value="random" class="form-radio text-purple-600 h-5 w-5">
-                                <span class="ml-2 text-gray-700">Ngẫu nhiên</span>
-                            </label>
-                        </div>
-                    </div>
                     <button id="startQuizBtn"
                             class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 shadow-md">
                         Bắt Đầu Kiểm Tra
                     </button>
                 </div>
             </div>
-
             <div id="quizArea" class="hidden bg-white p-8 rounded-lg shadow-lg">
                 <div class="flex justify-between items-center mb-6">
-                    <span class="text-xl font-semibold text-gray-700">
-                        Câu hỏi <span id="currentQuestionNumber">1</span>/<span id="totalQuizQuestions">5</span>
-                        <span class="ml-4 text-green-600">Đúng: <span id="quizCorrectCount">0</span></span>
-                        <span class="ml-2 text-red-600">Sai: <span id="quizIncorrectCount">0</span></span>
-                    </span>
+                    <span class="text-xl font-semibold text-gray-700">Câu hỏi <span id="currentQuestionNumber">1</span>/<span id="totalQuizQuestions">5</span></span>
                     <span class="text-2xl font-bold text-red-600" id="quizTimer">30</span>
                 </div>
                 <div class="text-center mb-8">
                     <p class="text-3xl font-bold text-purple-800 mb-4">
-                        <span id="quizQuestion"></span>
+                        <span id="vietnameseQuestion"></span>
                     </p>
-                    <input type="text" id="englishAnswerInput" placeholder="Nhập đáp án của bạn..."
+                    <input type="text" id="englishAnswerInput" placeholder="Nhập từ tiếng Anh..."
                            class="shadow appearance-none border rounded-lg w-full max-w-md py-4 px-6 text-gray-700 text-2xl leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-center">
                 </div>
                 <div id="feedbackMessage" class="hidden text-center mt-4 text-lg font-semibold"></div>
                 <div class="flex justify-center gap-4 mt-6">
                     <button id="submitAnswerBtn"
                             class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200 shadow-md">
-                        Kiểm tra
+                        Nộp Đáp Án
                     </button>
-                    <button id="nextQuestionBtn"
-                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200 shadow-md hidden">
-                        Câu kế tiếp
-                    </button>
-                    <button id="endQuizBtn"
-                            class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200 shadow-md">
-                        Kết thúc
+                    <button id="skipQuestionBtn"
+                            class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200 shadow-md">
+                        Bỏ Qua
                     </button>
                 </div>
             </div>
-
             <div id="quizResults" class="hidden bg-white p-8 rounded-lg shadow-lg mt-8">
-                <h3 class="text-3xl font-semibold text-purple-700 mb-6 text-center">Kết Quả Kiểm Tra</h3>
-                <div class="grid grid-cols-2 gap-4 text-xl mb-6">
-                    <div class="text-center">
-                        <p class="text-gray-600">Tổng số câu hỏi:</p>
-                        <p class="text-purple-800 font-bold text-4xl" id="resultsTotalQuestions">0</p>
+                <h3 class="text-3xl font-bold text-purple-700 mb-6 text-center">Kết Quả Bài Kiểm Tra</h3>
+                <p class="text-xl text-center mb-4">Bạn đã trả lời đúng <span id="correctCount" class="font-bold text-green-600">0</span> trên <span id="totalCount" class="font-bold text-purple-600">0</span> câu.</p>
+                <div id="detailedResults" class="space-y-4">
                     </div>
-                    <div class="text-center">
-                        <p class="text-gray-600">Điểm:</p>
-                        <p class="text-green-600 font-bold text-4xl" id="resultsScore">0%</p>
-                    </div>
-                </div>
-                <div class="text-center mb-6">
-                    <p class="text-gray-600">Số câu đúng:</p>
-                    <p class="text-green-600 font-bold text-3xl" id="resultsCorrect">0</p>
-                </div>
-                <div class="text-center mb-8">
-                    <p class="text-gray-600">Số câu sai:</p>
-                    <p class="text-red-600 font-bold text-3xl" id="resultsIncorrect">0</p>
-                </div>
-
-                <h4 class="text-2xl font-medium text-purple-600 mb-4">Các Từ Cần Ôn Tập Lại:</h4>
-                <div id="wordsToReview" class="overflow-x-auto mb-6">
-                    <table class="min-w-full bg-white rounded-lg shadow-md">
-                        <thead>
-                            <tr class="bg-gray-200 text-gray-700 uppercase text-sm leading-normal">
-                                <th class="py-3 px-6 text-left">Từ Tiếng Anh</th>
-                                <th class="py-3 px-6 text-left">Nghĩa Đúng</th>
-                                <th class="py-3 px-6 text-left">Câu Trả Lời Của Bạn</th>
-                            </tr>
-                        </thead>
-                        <tbody id="wordsToReviewTableBody" class="text-gray-600 text-sm font-light">
-                            <tr><td colspan="3" class="py-4 text-center text-gray-500">Chúc mừng! Bạn đã trả lời đúng tất cả.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="flex justify-center gap-4">
+                <div class="text-center mt-8">
                     <button id="retakeQuizBtn"
-                            class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 shadow-md">
-                        Kiểm Tra Lại
+                            class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200 shadow-md">
+                        Làm Lại Bài Kiểm Tra
                     </button>
-                    <button id="newQuizBtn"
-                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 shadow-md">
-                        Tạo Bài Kiểm Tra Mới
+                </div>
+            </div>
+            <div id="cheatDetectionMessage" class="hidden fixed inset-0 bg-red-800 bg-opacity-90 flex items-center justify-center z-50 p-4">
+                <div class="bg-white p-8 rounded-lg shadow-2xl text-center max-w-md">
+                    <h3 class="text-3xl font-bold text-red-700 mb-4">Phát Hiện Gian Lận!</h3>
+                    <p class="text-lg text-gray-700 mb-6">Bạn đã chuyển khỏi tab hoặc cửa sổ trong khi làm bài kiểm tra. Bài kiểm tra này sẽ bị hủy.</p>
+                    <button id="closeCheatMessageBtn"
+                            class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 shadow-md">
+                        Đóng
                     </button>
                 </div>
             </div>
         </section>
-
         <section id="performance-section" class="section">
             <h2 class="text-3xl font-semibold text-purple-700 mb-6 border-b-2 pb-2 border-purple-300">Hiệu Suất Học Tập</h2>
-            <p class="text-gray-700">Tính năng này sẽ sớm ra mắt! Tại đây, bạn sẽ có thể theo dõi tiến độ học tập, xem các từ đã học, các từ cần ôn tập, và hiệu suất tổng thể của mình.</p>
-            <div id="performanceContent" class="mt-6 bg-purple-50 p-6 rounded-lg shadow-inner">
-                <h3 class="text-2xl font-medium text-purple-600 mb-4">Thống Kê Tổng Quan</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-center">
-                    <div class="bg-white p-4 rounded-lg shadow-md">
-                        <p class="text-lg text-gray-600">Tổng số Chủ đề:</p>
-                        <p class="text-3xl font-bold text-blue-600" id="totalTopicsStat">0</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-lg shadow-md">
-                        <p class="text-lg text-gray-600">Tổng số Từ vựng:</p>
-                        <p class="text-3xl font-bold text-green-600" id="totalVocabStat">0</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-lg shadow-md">
-                        <p class="text-lg text-gray-600">Bài kiểm tra đã hoàn thành:</p>
-                        <p class="text-3xl font-bold text-purple-600" id="completedQuizzesStat">0</p>
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label for="selectCategoryForPerformance" class="block text-gray-700 text-sm font-bold mb-2">Chọn Mục Lớn:</label>
+                    <select id="selectCategoryForPerformance"
+                            class="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </select>
                 </div>
-
-                <h3 class="text-2xl font-medium text-purple-600 mt-8 mb-4">Hiệu suất theo Chủ đề</h3>
-                <div id="topicPerformanceList" class="space-y-4">
-                    <p class="text-gray-500 text-center">Chưa có dữ liệu hiệu suất để hiển thị.</p>
+                <div>
+                    <label for="selectTopicForPerformance" class="block text-gray-700 text-sm font-bold mb-2">Chọn Chủ Đề Con Để Xem Hiệu Suất:</label>
+                    <select id="selectTopicForPerformance"
+                            class="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <option value="">-- Chọn chủ đề con để xem hiệu suất --</option>
+                    </select>
+                </div>
+            </div>
+            <div id="performanceContent" class="hidden">
+                <h3 class="text-2xl font-medium text-purple-600 mb-4">Lịch Sử Bài Kiểm Tra</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white rounded-lg shadow-md">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-700 uppercase text-sm leading-normal">
+                                <th class="py-3 px-6 text-left">Ngày</th>
+                                <th class="py-3 px-6 text-left">Điểm</th>
+                                <th class="py-3 px-6 text-left">Tổng số câu</th>
+                                <th class="py-3 px-6 text-left">Loại bài</th>
+                                <th class="py-3 px-6 text-center">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="performanceTableBody" class="text-gray-600 text-sm font-light">
+                            <tr><td colspan="5" class="py-4 text-center text-gray-500">Chưa có lịch sử bài kiểm tra cho chủ đề này.</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </section>
     </main>
-
-    <footer class="bg-gray-800 text-white py-6 mt-8 shadow-inner">
-        <div class="container mx-auto text-center text-gray-400">
-            <p>&copy; 2025 Trang Web Dò Từ Vựng Của Bạn. Mọi quyền được bảo lưu.</p>
-            <p>Được thiết kế với Tailwind CSS.</p>
-        </div>
-    </footer>
-
-    <div id="editTopicModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="modal-close-btn" onclick="closeModal('editTopicModal')">&times;</span>
-            <h3 class="text-2xl font-semibold text-purple-700 mb-4">Chỉnh Sửa Chủ Đề</h3>
-            <form id="editTopicForm">
-                <input type="hidden" id="editTopicId">
-                <div class="mb-4">
-                    <label for="editParentCategorySelect" class="block text-gray-700 text-sm font-bold mb-2">Mục Lớn:</label>
-                    <select id="editParentCategorySelect"
-                            class="shadow border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label for="editTopicNameInput" class="block text-gray-700 text-sm font-bold mb-2">Tên Chủ Đề Con:</label>
-                    <input type="text" id="editTopicNameInput"
-                           class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
-                </div>
-                <div class="flex justify-end gap-2">
-                    <button type="button" onclick="closeModal('editTopicModal')"
-                            class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200">
-                        Hủy
-                    </button>
-                    <button type="submit"
-                            class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200">
-                        Lưu Thay Đổi
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="editVocabModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="modal-close-btn" onclick="closeModal('editVocabModal')">&times;</span>
-            <h3 class="text-2xl font-semibold text-green-700 mb-4">Chỉnh Sửa Từ Vựng</h3>
-            <form id="editVocabForm">
-                <input type="hidden" id="editVocabId">
-                <div class="mb-4">
-                    <label for="editEnglishWord" class="block text-gray-700 text-sm font-bold mb-2">Từ Tiếng Anh:</label>
-                    <input type="text" id="editEnglishWord"
-                           class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
-                </div>
-                <div class="mb-4">
-                    <label for="editVietnameseMeaning" class="block text-gray-700 text-sm font-bold mb-2">Nghĩa Tiếng Việt (phân tách bằng dấu phẩy):</label>
-                    <input type="text" id="editVietnameseMeaning"
-                           class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
-                </div>
-                <div class="mb-4">
-                    <label for="editExampleSentence" class="block text-gray-700 text-sm font-bold mb-2">Ví Dụ Câu (tùy chọn):</label>
-                    <textarea id="editExampleSentence" rows="2"
-                              class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"></textarea>
-                </div>
-                <div class="flex justify-end gap-2">
-                    <button type="button" onclick="closeModal('editVocabModal')"
-                            class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200">
-                        Hủy
-                    </button>
-                    <button type="submit"
-                            class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200">
-                        Lưu Thay Đổi
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <script>
-        // Data storage (using localStorage for persistence)
-        let categories = JSON.parse(localStorage.getItem('categories')) || {
-            'Cơ bản': [],
-            'Nâng cao': [],
-            'Ngữ pháp': [],
-            'Thành ngữ': []
+        // Global variables for managing application data and state
+        const APP_DATA_KEY = 'myVocabularyApp'; // Key for storing data in localStorage
+        let appData = {
+            categories: [] // Array containing main categories (Ken, Nhím), each category has an ID, name, and an array of sub-topics
         };
-        let vocabularies = JSON.parse(localStorage.getItem('vocabularies')) || [];
-        let quizResults = JSON.parse(localStorage.getItem('quizResults')) || [];
+        let currentCategoryId = null; // ID of the currently selected main category
+        let currentTopicId = null; // ID of the currently selected sub-topic
 
-        // --- Helper Functions ---
-        function saveToLocalStorage() {
-            localStorage.setItem('categories', JSON.stringify(categories));
-            localStorage.setItem('vocabularies', JSON.stringify(vocabularies));
-            localStorage.setItem('quizResults', JSON.stringify(quizResults));
-        }
+        let currentQuiz = {
+            questions: [], // Array of questions in the current quiz
+            currentQuestionIndex: 0,
+            score: 0,
+            timerInterval: null,
+            timeRemaining: 0,
+            quizActive: false, // Quiz active status
+            quizTimeLimit: 30, // Default time limit for each question
+            quizType: 'single', // 'single' or 'mixed'
+            selectedMixedTopicIds: [] // For mixed quizzes, stores IDs of topics included
+        };
 
-        function showMessage(message, type = 'info') {
-            const generalMessage = document.getElementById('generalMessage');
-            generalMessage.textContent = message;
-            generalMessage.classList.remove('hidden', 'bg-blue-100', 'text-blue-800', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800', 'bg-yellow-100', 'text-yellow-800');
-            generalMessage.classList.add('block');
+        // --- DOM Elements ---
+        const generalMessage = document.getElementById('generalMessage');
 
-            if (type === 'success') {
-                generalMessage.classList.add('bg-green-100', 'text-green-800');
-            } else if (type === 'error') {
-                generalMessage.classList.add('bg-red-100', 'text-red-800');
-            } else if (type === 'warning') {
-                generalMessage.classList.add('bg-yellow-100', 'text-yellow-800');
-            } else { // info
-                generalMessage.classList.add('bg-blue-100', 'text-blue-800');
-            }
+        // Elements for Topic Management section
+        const addTopicForm = document.getElementById('addTopicForm');
+        const parentCategorySelect = document.getElementById('parentCategorySelect'); // Select for parent category
+        const newTopicNameInput = document.getElementById('newTopicName');
+        const categoriesListDiv = document.getElementById('categoriesList'); // Renamed from topicsListDiv
 
+        // Elements for Vocabulary Management section
+        const selectCategoryForVocab = document.getElementById('selectCategoryForVocab'); // Select for category
+        const selectTopicForVocab = document.getElementById('selectTopicForVocab');
+        const vocabContentDiv = document.getElementById('vocabContent');
+        const addSingleVocabForm = document.getElementById('addSingleVocabForm');
+        const englishWordInput = document.getElementById('englishWord');
+        const vietnameseMeaningInput = document.getElementById('vietnameseMeaning');
+        const exampleSentenceInput = document.getElementById('exampleSentence');
+        const bulkImportVocabForm = document.getElementById('bulkImportVocabForm');
+        const bulkVocabInput = document.getElementById('bulkVocabInput');
+        const currentTopicVocabTableBody = document.getElementById('currentTopicVocabTableBody');
+        const currentVocabCountSpan = document.getElementById('currentVocabCount'); // Added for vocabulary count
+
+        // Elements for Quiz section
+        const quizModeRadios = document.querySelectorAll('input[name="quizMode"]');
+        const singleTopicQuizOptionsDiv = document.getElementById('singleTopicQuizOptions');
+        const mixedTopicQuizOptionsDiv = document.getElementById('mixedTopicQuizOptions');
+        const multiTopicCheckboxesDiv = document.getElementById('multiTopicCheckboxes');
+
+        const selectCategoryForQuiz = document.getElementById('selectCategoryForQuiz'); // Select for category
+        const selectTopicForQuiz = document.getElementById('selectTopicForQuiz');
+        const quizSettingsDiv = document.getElementById('quizSettings');
+        const quizQuestionCountInput = document.getElementById('quizQuestionCount');
+        const quizTimeLimitInput = document.getElementById('quizTimeLimit');
+        const startQuizBtn = document.getElementById('startQuizBtn');
+        const quizArea = document.getElementById('quizArea');
+        const currentQuestionNumberSpan = document.getElementById('currentQuestionNumber');
+        const totalQuizQuestionsSpan = document.getElementById('totalQuizQuestions');
+        const quizTimerSpan = document.getElementById('quizTimer');
+        const vietnameseQuestionSpan = document.getElementById('vietnameseQuestion');
+        const englishAnswerInput = document.getElementById('englishAnswerInput');
+        const submitAnswerBtn = document.getElementById('submitAnswerBtn');
+        const skipQuestionBtn = document.getElementById('skipQuestionBtn');
+        const feedbackMessageDiv = document.getElementById('feedbackMessage'); // Element for feedback
+        const quizResultsDiv = document.getElementById('quizResults');
+        const correctCountSpan = document.getElementById('correctCount');
+        const totalCountSpan = document.getElementById('totalCount');
+        const detailedResultsDiv = document.getElementById('detailedResults');
+        const retakeQuizBtn = document.getElementById('retakeQuizBtn');
+        const cheatDetectionMessage = document.getElementById('cheatDetectionMessage');
+        const closeCheatMessageBtn = document.getElementById('closeCheatMessageBtn');
+
+        // Elements for Performance section
+        const selectCategoryForPerformance = document.getElementById('selectCategoryForPerformance');
+        const selectTopicForPerformance = document.getElementById('selectTopicForPerformance');
+        const performanceContentDiv = document.getElementById('performanceContent');
+        const performanceTableBody = document.getElementById('performanceTableBody');
+
+        // Navigation elements
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.section');
+
+        // --- General Utility Functions ---
+
+        /**
+         * Displays a temporary message to the user.
+         * @param {string} text - The message to display.
+         * @param {string} type - 'success' for green, 'error' for red.
+         * @param {number} duration - How long the message is visible in milliseconds.
+         */
+        function showMessage(text, type = 'success', duration = 3000) {
+            generalMessage.textContent = text;
+            generalMessage.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+            generalMessage.classList.remove('hidden');
             setTimeout(() => {
                 generalMessage.classList.add('hidden');
-            }, 5000);
+            }, duration);
         }
 
-        function populateParentCategories(selectElementId, includeAllOption = false) {
-            const selectElement = document.getElementById(selectElementId);
-            if (!selectElement) return; // Add a check to prevent errors if element doesn't exist yet
-
-            selectElement.innerHTML = ''; // Clear existing options
-
-            if (includeAllOption) {
-                const allOption = document.createElement('option');
-                allOption.value = '';
-                allOption.textContent = '-- Chọn mục lớn --';
-                selectElement.appendChild(allOption);
-            }
-
-            for (const categoryName in categories) {
-                const option = document.createElement('option');
-                option.value = categoryName;
-                option.textContent = categoryName;
-                selectElement.appendChild(option);
+        /**
+         * Saves the entire appData object to localStorage.
+         */
+        function saveAppData() {
+            try {
+                localStorage.setItem(APP_DATA_KEY, JSON.stringify(appData));
+            } catch (e) {
+                console.error("Error saving data to localStorage:", e);
+                showMessage("Lỗi khi lưu dữ liệu. Có thể bộ nhớ đầy.", "error");
             }
         }
 
-        function populateTopicsForCategory(categoryName, selectElementId, includePlaceholder = false, allowNoTopic = false) {
-            const selectElement = document.getElementById(selectElementId);
-            if (!selectElement) return; // Add a check to prevent errors if element doesn't exist yet
-
-            selectElement.innerHTML = ''; // Clear existing options
-
-            if (includePlaceholder) {
-                const placeholderOption = document.createElement('option');
-                placeholderOption.value = '';
-                placeholderOption.textContent = allowNoTopic ? '-- Chọn chủ đề con (tùy chọn) --' : '-- Chọn chủ đề con --';
-                selectElement.appendChild(placeholderOption);
-            }
-
-            if (categories[categoryName]) {
-                categories[categoryName].forEach(topic => {
-                    const option = document.createElement('option');
-                    option.value = topic.id;
-                    option.textContent = topic.name;
-                    selectElement.appendChild(option);
-                });
-            }
-        }
-
-        function getTopicById(topicId) {
-            for (const categoryName in categories) {
-                const topic = categories[categoryName].find(t => t.id === topicId);
-                if (topic) return topic;
-            }
-            return null;
-        }
-
-        function getCategoryNameByTopicId(topicId) {
-            for (const categoryName in categories) {
-                if (categories[categoryName].some(t => t.id === topicId)) {
-                    return categoryName;
+        /**
+         * Loads appData from localStorage. Initializes default categories if not found.
+         */
+        function loadAppData() {
+            try {
+                const storedData = localStorage.getItem(APP_DATA_KEY);
+                if (storedData) {
+                    appData = JSON.parse(storedData);
                 }
-            }
-            return null;
-        }
-
-        function displayTopics() {
-            const categoriesList = document.getElementById('categoriesList');
-            if (!categoriesList) return;
-
-            categoriesList.innerHTML = '';
-
-            let hasAnyTopic = false;
-            for (const categoryName in categories) {
-                if (categories[categoryName] && categories[categoryName].length > 0) {
-                    hasAnyTopic = true;
-                    const categoryDiv = document.createElement('div');
-                    categoryDiv.className = 'bg-white p-6 rounded-lg shadow-md';
-                    categoryDiv.innerHTML = `
-                        <h4 class="text-xl font-semibold text-purple-700 mb-4">${categoryName}</h4>
-                        <div class="space-y-3" id="topicList-${categoryName.replace(/\s/g, '_')}">
-                            ${categories[categoryName].map(topic => `
-                                <div class="flex justify-between items-center bg-purple-50 p-3 rounded-md shadow-sm">
-                                    <span class="text-gray-800 font-medium">${topic.name}</span>
-                                    <div>
-                                        <button class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md mr-2 edit-topic-btn" data-topic-id="${topic.id}">
-                                            Chỉnh sửa
-                                        </button>
-                                        <button class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md delete-topic-btn" data-topic-id="${topic.id}">
-                                            Xóa
-                                        </button>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
-                    categoriesList.appendChild(categoryDiv);
-                }
+            } catch (e) {
+                console.error("Error loading data from localStorage:", e);
+                showMessage("Lỗi khi tải dữ liệu. Đang tải dữ liệu mặc định.", "error");
+                appData = { categories: [] }; // Reset to default if loading fails
             }
 
-            if (!hasAnyTopic) {
-                categoriesList.innerHTML = '<p class="text-gray-500 text-center col-span-full">Chưa có chủ đề nào được tạo. Hãy thêm chủ đề mới!</p>';
-            }
-
-            attachTopicEventListeners();
-        }
-
-        function attachTopicEventListeners() {
-            document.querySelectorAll('.edit-topic-btn').forEach(button => {
-                button.onclick = (e) => openEditTopicModal(e.target.dataset.topicId);
-            });
-            document.querySelectorAll('.delete-topic-btn').forEach(button => {
-                button.onclick = (e) => deleteTopic(e.target.dataset.topicId);
-            });
-        }
-
-        function displayVocabularies(topicId) {
-            const currentTopicVocabTableBody = document.getElementById('currentTopicVocabTableBody');
-            const currentVocabCount = document.getElementById('currentVocabCount');
-            if (!currentTopicVocabTableBody || !currentVocabCount) return;
-
-            currentTopicVocabTableBody.innerHTML = '';
-            const topicVocabs = vocabularies.filter(vocab => vocab.topicId === topicId);
-
-            currentVocabCount.textContent = topicVocabs.length;
-
-            if (topicVocabs.length === 0) {
-                currentTopicVocabTableBody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-gray-500">Chủ đề này chưa có từ vựng nào.</td></tr>';
-                return;
-            }
-
-            topicVocabs.forEach(vocab => {
-                const row = document.createElement('tr');
-                row.className = 'border-b border-gray-100 hover:bg-gray-50';
-                row.innerHTML = `
-                    <td class="py-3 px-6 text-left">${vocab.english}</td>
-                    <td class="py-3 px-6 text-left">${vocab.vietnamese.join(', ')}</td>
-                    <td class="py-3 px-6 text-left">${vocab.example || ''}</td>
-                    <td class="py-3 px-6 text-center">
-                        <button class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md mr-2 edit-vocab-btn" data-vocab-id="${vocab.id}">
-                            Chỉnh sửa
-                        </button>
-                        <button class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md delete-vocab-btn" data-vocab-id="${vocab.id}">
-                            Xóa
-                        </button>
-                    </td>
-                `;
-                currentTopicVocabTableBody.appendChild(row);
-            });
-            attachVocabEventListeners();
-        }
-
-        function attachVocabEventListeners() {
-            document.querySelectorAll('.edit-vocab-btn').forEach(button => {
-                button.onclick = (e) => openEditVocabModal(e.target.dataset.vocabId);
-            });
-            document.querySelectorAll('.delete-vocab-btn').forEach(button => {
-                button.onclick = (e) => deleteVocabulary(e.target.dataset.vocabId);
-            });
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId)?.classList.remove('show');
-        }
-
-        // --- Modals ---
-        function openEditTopicModal(topicId) {
-            const topic = getTopicById(topicId);
-            if (!topic) {
-                showMessage('Không tìm thấy chủ đề để chỉnh sửa.', 'error');
-                return;
-            }
-
-            const categoryName = getCategoryNameByTopicId(topicId);
-
-            document.getElementById('editTopicId').value = topicId;
-            document.getElementById('editTopicNameInput').value = topic.name;
-
-            populateParentCategories('editParentCategorySelect', false);
-            document.getElementById('editParentCategorySelect').value = categoryName;
-
-            document.getElementById('editTopicModal')?.classList.add('show');
-        }
-
-        function openEditVocabModal(vocabId) {
-            const vocab = vocabularies.find(v => v.id === vocabId);
-            if (!vocab) {
-                showMessage('Không tìm thấy từ vựng để chỉnh sửa.', 'error');
-                return;
-            }
-
-            document.getElementById('editVocabId').value = vocabId;
-            document.getElementById('editEnglishWord').value = vocab.english;
-            document.getElementById('editVietnameseMeaning').value = vocab.vietnamese.join(', ');
-            document.getElementById('editExampleSentence').value = vocab.example || '';
-
-            document.getElementById('editVocabModal')?.classList.add('show');
-        }
-
-        // --- Category/Topic Management ---
-        document.getElementById('addTopicForm')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const parentCategory = document.getElementById('parentCategorySelect').value;
-            const newTopicName = document.getElementById('newTopicName').value.trim();
-
-            if (!parentCategory) {
-                showMessage('Vui lòng chọn một Mục Lớn.', 'warning');
-                return;
-            }
-            if (!newTopicName) {
-                showMessage('Vui lòng nhập tên chủ đề con.', 'warning');
-                return;
-            }
-
-            if (categories[parentCategory].some(topic => topic.name.toLowerCase() === newTopicName.toLowerCase())) {
-                showMessage(`Chủ đề "${newTopicName}" đã tồn tại trong mục "${parentCategory}".`, 'warning');
-                return;
-            }
-
-            const newTopic = {
-                id: `topic-${Date.now()}`,
-                name: newTopicName
-            };
-            categories[parentCategory].push(newTopic);
-            saveToLocalStorage();
-            displayTopics();
-            populateSelects();
-            document.getElementById('newTopicName').value = '';
-            showMessage(`Đã thêm chủ đề "${newTopicName}" vào mục "${parentCategory}".`, 'success');
-        });
-
-        document.getElementById('editTopicForm')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const topicId = document.getElementById('editTopicId').value;
-            const newParentCategory = document.getElementById('editParentCategorySelect').value;
-            const newTopicName = document.getElementById('editTopicNameInput').value.trim();
-
-            if (!newTopicName) {
-                showMessage('Tên chủ đề không được để trống.', 'warning');
-                return;
-            }
-
-            let oldCategoryName = null;
-            let oldTopicIndex = -1;
-
-            for (const catName in categories) {
-                const index = categories[catName].findIndex(t => t.id === topicId);
-                if (index !== -1) {
-                    oldCategoryName = catName;
-                    oldTopicIndex = index;
-                    break;
-                }
-            }
-
-            if (oldTopicIndex === -1) {
-                showMessage('Không tìm thấy chủ đề để cập nhật.', 'error');
-                closeModal('editTopicModal');
-                return;
-            }
-
-            if (categories[newParentCategory].some(topic => topic.name.toLowerCase() === newTopicName.toLowerCase() && topic.id !== topicId)) {
-                showMessage(`Chủ đề "${newTopicName}" đã tồn tại trong mục "${newParentCategory}".`, 'warning');
-                return;
-            }
-
-            const updatedTopic = { ...categories[oldCategoryName][oldTopicIndex], name: newTopicName };
-
-            if (oldCategoryName !== newParentCategory) {
-                categories[oldCategoryName].splice(oldTopicIndex, 1);
-                categories[newParentCategory].push(updatedTopic);
-            } else {
-                categories[oldCategoryName][oldTopicIndex] = updatedTopic;
-            }
-
-            saveToLocalStorage();
-            displayTopics();
-            populateSelects();
-            closeModal('editTopicModal');
-            showMessage(`Chủ đề "${newTopicName}" đã được cập nhật.`, 'success');
-        });
-
-        function deleteTopic(topicId) {
-            if (!confirm('Bạn có chắc chắn muốn xóa chủ đề này? Tất cả từ vựng trong chủ đề này cũng sẽ bị xóa!')) {
-                return;
-            }
-
-            let found = false;
-            for (const categoryName in categories) {
-                const initialLength = categories[categoryName].length;
-                categories[categoryName] = categories[categoryName].filter(topic => topic.id !== topicId);
-                if (categories[categoryName].length < initialLength) {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (found) {
-                vocabularies = vocabularies.filter(vocab => vocab.topicId !== topicId);
-                saveToLocalStorage();
-                displayTopics();
-                populateSelects();
-                showMessage('Chủ đề và tất cả từ vựng liên quan đã được xóa.', 'success');
-            } else {
-                showMessage('Không tìm thấy chủ đề để xóa.', 'error');
-            }
-        }
-
-        // --- Vocabulary Management ---
-        document.getElementById('selectCategoryForVocab')?.addEventListener('change', function() {
-            const categoryName = this.value;
-            populateTopicsForCategory(categoryName, 'selectTopicForVocab', true);
-            document.getElementById('vocabContent')?.classList.add('hidden');
-        });
-
-        document.getElementById('selectTopicForVocab')?.addEventListener('change', function() {
-            const topicId = this.value;
-            const vocabContent = document.getElementById('vocabContent');
-            if (vocabContent) { // Ensure vocabContent exists before trying to manipulate
-                if (topicId) {
-                    vocabContent.classList.remove('hidden');
-                    displayVocabularies(topicId);
-                } else {
-                    vocabContent.classList.add('hidden');
-                }
-            }
-        });
-
-        document.getElementById('addSingleVocabForm')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const topicId = document.getElementById('selectTopicForVocab').value;
-            if (!topicId) {
-                showMessage('Vui lòng chọn một chủ đề trước khi thêm từ vựng.', 'warning');
-                return;
-            }
-
-            const englishWord = document.getElementById('englishWord').value.trim();
-            const vietnameseMeaning = document.getElementById('vietnameseMeaning').value.trim().split(',').map(m => m.trim()).filter(m => m !== '');
-            const exampleSentence = document.getElementById('exampleSentence').value.trim();
-
-            if (!englishWord || vietnameseMeaning.length === 0) {
-                showMessage('Vui lòng nhập Từ Tiếng Anh và Nghĩa Tiếng Việt.', 'warning');
-                return;
-            }
-
-            if (vocabularies.some(v => v.topicId === topicId && v.english.toLowerCase() === englishWord.toLowerCase())) {
-                showMessage(`Từ "${englishWord}" đã tồn tại trong chủ đề này.`, 'warning');
-                return;
-            }
-
-            const newVocab = {
-                id: `vocab-${Date.now()}`,
-                topicId: topicId,
-                english: englishWord,
-                vietnamese: vietnameseMeaning,
-                example: exampleSentence,
-                mastery: 0
-            };
-            vocabularies.push(newVocab);
-            saveToLocalStorage();
-            displayVocabularies(topicId);
-            this.reset();
-            showMessage(`Đã thêm từ "${englishWord}".`, 'success');
-            updatePerformanceStats();
-        });
-
-        document.getElementById('bulkImportVocabForm')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const topicId = document.getElementById('selectTopicForVocab').value;
-            if (!topicId) {
-                showMessage('Vui lòng chọn một chủ đề trước khi nhập từ vựng hàng loạt.', 'warning');
-                return;
-            }
-
-            const bulkVocabInput = document.getElementById('bulkVocabInput').value.trim();
-            if (!bulkVocabInput) {
-                showMessage('Vui lòng nhập dữ liệu từ vựng.', 'warning');
-                return;
-            }
-
-            const lines = bulkVocabInput.split('\n').filter(line => line.trim() !== '');
-            let importedCount = 0;
-            let skippedCount = 0;
-            const skippedWords = [];
-
-            lines.forEach(line => {
-                const parts = line.split(' - ').map(p => p.trim());
-                if (parts.length >= 2) {
-                    const englishWord = parts[0];
-                    const vietnameseMeaning = parts[1].split(',').map(m => m.trim()).filter(m => m !== '');
-                    const exampleSentence = parts[2] || '';
-
-                    if (englishWord && vietnameseMeaning.length > 0) {
-                        if (vocabularies.some(v => v.topicId === topicId && v.english.toLowerCase() === englishWord.toLowerCase())) {
-                            skippedCount++;
-                            skippedWords.push(englishWord);
-                        } else {
-                            const newVocab = {
-                                id: `vocab-${Date.now() + importedCount}`,
-                                topicId: topicId,
-                                english: englishWord,
-                                vietnamese: vietnameseMeaning,
-                                example: exampleSentence,
-                                mastery: 0
-                            };
-                            vocabularies.push(newVocab);
-                            importedCount++;
-                        }
-                    } else {
-                        skippedCount++;
-                        skippedWords.push(parts[0] || 'Dòng không hợp lệ');
+            // Ensure default categories exist and have a 'results' array for existing topics
+            let kenExists = false;
+            let nhimExists = false;
+            appData.categories.forEach(cat => {
+                if (cat.id === 'ken') kenExists = true;
+                if (cat.id === 'nhim') nhimExists = true;
+                cat.topics.forEach(topic => {
+                    if (!topic.results) {
+                        topic.results = []; // Initialize results array for existing topics
                     }
-                } else {
-                    skippedCount++;
-                    skippedWords.push(parts[0] || 'Dòng không hợp lệ');
-                }
-            });
-
-            saveToLocalStorage();
-            displayVocabularies(topicId);
-            this.reset();
-            let message = `Đã nhập thành công ${importedCount} từ.`;
-            if (skippedCount > 0) {
-                message += ` Bỏ qua ${skippedCount} từ (có thể do trùng lặp hoặc định dạng sai): ${skippedWords.join(', ')}`;
-                showMessage(message, 'warning');
-            } else {
-                showMessage(message, 'success');
-            }
-            updatePerformanceStats();
-        });
-
-        document.getElementById('editVocabForm')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const vocabId = document.getElementById('editVocabId').value;
-            const englishWord = document.getElementById('editEnglishWord').value.trim();
-            const vietnameseMeaning = document.getElementById('editVietnameseMeaning').value.trim().split(',').map(m => m.trim()).filter(m => m !== '');
-            const exampleSentence = document.getElementById('editExampleSentence').value.trim();
-
-            if (!englishWord || vietnameseMeaning.length === 0) {
-                showMessage('Vui lòng nhập Từ Tiếng Anh và Nghĩa Tiếng Việt.', 'warning');
-                return;
-            }
-
-            const vocabIndex = vocabularies.findIndex(v => v.id === vocabId);
-            if (vocabIndex === -1) {
-                showMessage('Không tìm thấy từ vựng để cập nhật.', 'error');
-                closeModal('editVocabModal');
-                return;
-            }
-
-            const currentVocab = vocabularies[vocabIndex];
-
-            if (vocabularies.some(v => v.topicId === currentVocab.topicId && v.english.toLowerCase() === englishWord.toLowerCase() && v.id !== vocabId)) {
-                showMessage(`Từ "${englishWord}" đã tồn tại trong chủ đề này.`, 'warning');
-                return;
-            }
-
-            vocabularies[vocabIndex] = {
-                ...currentVocab,
-                english: englishWord,
-                vietnamese: vietnameseMeaning,
-                example: exampleSentence
-            };
-            saveToLocalStorage();
-            displayVocabularies(currentVocab.topicId);
-            closeModal('editVocabModal');
-            showMessage(`Từ "${englishWord}" đã được cập nhật.`, 'success');
-        });
-
-        function deleteVocabulary(vocabId) {
-            if (!confirm('Bạn có chắc chắn muốn xóa từ vựng này?')) {
-                return;
-            }
-
-            const initialLength = vocabularies.length;
-            const deletedVocab = vocabularies.find(v => v.id === vocabId);
-            vocabularies = vocabularies.filter(vocab => vocab.id !== vocabId);
-
-            if (vocabularies.length < initialLength) {
-                saveToLocalStorage();
-                if (deletedVocab) {
-                    const currentTopicId = document.getElementById('selectTopicForVocab')?.value;
-                    if (currentTopicId === deletedVocab.topicId) {
-                        displayVocabularies(currentTopicId);
-                    }
-                }
-                showMessage('Từ vựng đã được xóa.', 'success');
-                updatePerformanceStats();
-            } else {
-                showMessage('Không tìm thấy từ vựng để xóa.', 'error');
-            }
-        }
-
-        // --- Quiz Section ---
-        let currentQuizVocabs = [];
-        let currentQuestionIndex = 0;
-        let quizCorrectAnswers = 0;
-        let quizIncorrectAnswers = 0;
-        let quizTimerInterval;
-        let quizTimeLimit;
-        let currentQuizQuestionDirection; // Store the actual direction for the current question
-        let quizWordsToReview = [];
-
-        document.querySelectorAll('input[name="quizMode"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                document.getElementById('singleTopicQuizOptions')?.classList.toggle('hidden', this.value !== 'single');
-                document.getElementById('mixedTopicQuizOptions')?.classList.toggle('hidden', this.value !== 'mixed');
-                if (this.value === 'mixed') {
-                    populateMultiTopicCheckboxes();
-                }
-            });
-        });
-
-        document.getElementById('selectCategoryForQuiz')?.addEventListener('change', function() {
-            const categoryName = this.value;
-            populateTopicsForCategory(categoryName, 'selectTopicForQuiz', true);
-        });
-
-        function populateMultiTopicCheckboxes() {
-            const multiTopicCheckboxes = document.getElementById('multiTopicCheckboxes');
-            if (!multiTopicCheckboxes) return;
-
-            multiTopicCheckboxes.innerHTML = '';
-            let hasTopics = false;
-
-            for (const categoryName in categories) {
-                if (categories[categoryName] && categories[categoryName].length > 0) {
-                    hasTopics = true;
-                    const categoryHeader = document.createElement('h5');
-                    categoryHeader.className = 'col-span-full font-semibold text-gray-800 mt-2 mb-1';
-                    categoryHeader.textContent = categoryName;
-                    multiTopicCheckboxes.appendChild(categoryHeader);
-
-                    categories[categoryName].forEach(topic => {
-                        const div = document.createElement('label');
-                        div.className = 'multi-select-option';
-                        div.innerHTML = `
-                            <input type="checkbox" name="selectedQuizTopics" value="${topic.id}">
-                            ${topic.name}
-                        `;
-                        multiTopicCheckboxes.appendChild(div);
+                    // Ensure vocabulary items have performance counters
+                    topic.vocabulary.forEach(vocab => {
+                        if (typeof vocab.correctAttempts === 'undefined') vocab.correctAttempts = 0;
+                        if (typeof vocab.incorrectAttempts === 'undefined') vocab.incorrectAttempts = 0;
                     });
-                }
-            }
-            if (!hasTopics) {
-                multiTopicCheckboxes.innerHTML = '<p class="text-gray-500 col-span-full">Chưa có chủ đề nào để chọn.</p>';
-            }
-        }
-
-        document.getElementById('startQuizBtn')?.addEventListener('click', startQuiz);
-
-        function startQuiz() {
-            const quizMode = document.querySelector('input[name="quizMode"]:checked')?.value;
-            const questionCountInput = document.getElementById('quizQuestionCount');
-            const quizTimeLimitInput = document.getElementById('quizTimeLimit');
-
-            const questionCount = parseInt(questionCountInput?.value || '0');
-            quizTimeLimit = parseInt(quizTimeLimitInput?.value || '30');
-            const quizDirectionSetting = document.querySelector('input[name="quizDirection"]:checked')?.value;
-
-            if (questionCount <= 0) {
-                showMessage('Số lượng câu hỏi phải lớn hơn 0.', 'warning');
-                return;
-            }
-            if (quizTimeLimit < 5) {
-                showMessage('Thời gian giới hạn phải ít nhất 5 giây.', 'warning');
-                return;
-            }
-
-
-            let selectedTopicIds = [];
-
-            if (quizMode === 'single') {
-                const singleTopicId = document.getElementById('selectTopicForQuiz')?.value;
-                if (!singleTopicId) {
-                    showMessage('Vui lòng chọn một chủ đề để kiểm tra.', 'warning');
-                    return;
-                }
-                selectedTopicIds.push(singleTopicId);
-            } else { // mixed mode
-                document.querySelectorAll('input[name="selectedQuizTopics"]:checked').forEach(checkbox => {
-                    selectedTopicIds.push(checkbox.value);
                 });
-                if (selectedTopicIds.length === 0) {
-                    showMessage('Vui lòng chọn ít nhất một chủ đề để kiểm tra ngẫu nhiên.', 'warning');
-                    return;
-                }
+            });
+
+            if (!kenExists) {
+                appData.categories.push({ id: 'ken', name: 'Ken', topics: [] });
             }
-
-            const availableVocabs = vocabularies.filter(vocab => selectedTopicIds.includes(vocab.topicId));
-
-            if (availableVocabs.length === 0) {
-                showMessage('Không có từ vựng nào trong (các) chủ đề đã chọn để kiểm tra.', 'warning');
-                return;
+            if (!nhimExists) {
+                appData.categories.push({ id: 'nhim', name: 'Nhím', topics: [] });
             }
-            if (availableVocabs.length < questionCount) {
-                showMessage(`Không đủ từ vựng (${availableVocabs.length}) để tạo bài kiểm tra với ${questionCount} câu hỏi. Vui lòng giảm số lượng câu hỏi hoặc thêm từ vựng.`, 'warning');
-                return;
-            }
-
-            currentQuizVocabs = shuffleArray(availableVocabs).slice(0, questionCount);
-
-            currentQuestionIndex = 0;
-            quizCorrectAnswers = 0;
-            quizIncorrectAnswers = 0;
-            quizWordsToReview = [];
-            currentQuizQuestionDirection = quizDirectionSetting; // This is the user's overall setting
-
-            document.getElementById('quizSettings')?.classList.add('hidden');
-            document.getElementById('quizArea')?.classList.remove('hidden');
-            document.getElementById('quizResults')?.classList.add('hidden');
-
-            document.getElementById('totalQuizQuestions').textContent = currentQuizVocabs.length;
-            document.getElementById('quizCorrectCount').textContent = quizCorrectAnswers;
-            document.getElementById('quizIncorrectCount').textContent = quizIncorrectAnswers;
-
-            loadNextQuestion();
+            saveAppData(); // Save to ensure defaults and result arrays are persisted
         }
 
+        /**
+         * Generates a unique ID using timestamp and random string.
+         * @returns {string} Unique ID.
+         */
+        function generateUniqueId() {
+            return Date.now().toString(36) + Math.random().toString(36).substring(2);
+        }
+
+        /**
+         * Shuffles an array using the Fisher-Yates algorithm.
+         * @param {Array} array - The array to shuffle.
+         * @returns {Array} The shuffled array.
+         */
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -1141,389 +534,1179 @@
             return array;
         }
 
-        function loadNextQuestion() {
-            clearInterval(quizTimerInterval);
-            document.getElementById('feedbackMessage')?.classList.add('hidden');
-            document.getElementById('submitAnswerBtn')?.classList.remove('hidden');
-            document.getElementById('nextQuestionBtn')?.classList.add('hidden');
-            document.getElementById('englishAnswerInput').value = '';
-            document.getElementById('englishAnswerInput').focus();
-            document.getElementById('englishAnswerInput').classList.remove('border-green-500', 'border-red-500');
+        /**
+         * Switches the active section of the website.
+         * @param {string} sectionId - The ID of the section to activate.
+         */
+        function showSection(sectionId) {
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
 
-            if (currentQuestionIndex < currentQuizVocabs.length) {
-                const currentVocab = currentQuizVocabs[currentQuestionIndex];
-                document.getElementById('currentQuestionNumber').textContent = currentQuestionIndex + 1;
+            navLinks.forEach(link => {
+                link.classList.remove('active-nav-link');
+                if (link.getAttribute('href') === '#' + sectionId) {
+                    link.classList.add('active-nav-link');
+                }
+            });
+            // End quiz if active when switching sections
+            if (currentQuiz.quizActive) {
+                endQuiz(true); // End quiz if active, mark as cheated
+            }
+        }
 
-                let questionText = '';
-                let actualDirectionForThisQuestion = currentQuizQuestionDirection; // Use the global setting first
+        // --- Custom Modal Logic ---
+        /**
+         * Shows a generic modal with custom content and optional buttons.
+         * @param {string} title - The title of the modal.
+         * @param {string} contentHtml - HTML content for the modal body.
+         * @param {Array} buttons - Array of button objects: [{ text: 'OK', className: '...', onClick: func }]
+         * @param {boolean} showCloseButton - Whether to show the 'X' close button.
+         * @returns {Promise} A promise that resolves when the modal is closed.
+         */
+        function showCustomModal(title, contentHtml, buttons = [], showCloseButton = true) {
+            return new Promise(resolve => {
+                const modalOverlay = document.createElement('div');
+                modalOverlay.className = 'modal-overlay'; // Use custom class for styling
 
-                if (currentQuizQuestionDirection === 'random') {
-                    actualDirectionForThisQuestion = Math.random() < 0.5 ? 'viet-to-eng' : 'eng-to-viet';
+                let buttonsHtml = buttons.map((btn, index) =>
+                    `<button id="modalBtn-${index}" class="${btn.className || 'bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg'}">${btn.text}</button>`
+                ).join('');
+
+                modalOverlay.innerHTML = `
+                    <div class="modal-content">
+                        ${showCloseButton ? '<span class="modal-close-btn">&times;</span>' : ''}
+                        <h3 class="text-xl font-semibold mb-4">${title}</h3>
+                        <div class="mb-6">${contentHtml}</div>
+                        <div class="flex justify-end space-x-2">
+                            ${buttonsHtml}
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modalOverlay);
+
+                // Animate modal in
+                setTimeout(() => {
+                    modalOverlay.classList.add('show');
+                }, 10);
+
+                const closeModal = (result = false) => {
+                    modalOverlay.classList.remove('show');
+                    modalOverlay.querySelector('.modal-content').addEventListener('transitionend', () => {
+                        if (modalOverlay.parentNode) {
+                            modalOverlay.parentNode.removeChild(modalOverlay);
+                        }
+                        resolve(result);
+                    }, { once: true });
+                };
+
+                // Add event listeners for buttons
+                buttons.forEach((btn, index) => {
+                    const buttonElement = modalOverlay.querySelector(`#modalBtn-${index}`);
+                    if (buttonElement) {
+                        buttonElement.addEventListener('click', () => {
+                            if (btn.onClick) btn.onClick();
+                            closeModal(btn.resultValue || true); // Pass a result value if specified
+                        });
+                    }
+                });
+
+                // Add event listener for close button if present
+                const closeBtn = modalOverlay.querySelector('.modal-close-btn');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => closeModal(false));
                 }
 
-                if (actualDirectionForThisQuestion === 'viet-to-eng') {
-                    questionText = currentVocab.vietnamese.join(', ');
-                } else { // eng-to-viet
-                    questionText = currentVocab.english;
+                // Close on overlay click
+                modalOverlay.addEventListener('click', (event) => {
+                    if (event.target === modalOverlay) {
+                        closeModal(false);
+                    }
+                });
+            });
+        }
+
+        /**
+         * Shows a confirmation modal.
+         * @param {string} message - The confirmation message.
+         * @returns {Promise<boolean>} Resolves with true if confirmed, false otherwise.
+         */
+        function showConfirmModal(message) {
+            return showCustomModal(
+                'Xác nhận',
+                `<p class="text-gray-700">${message}</p>`,
+                [
+                    { text: 'Hủy', className: 'bg-gray-500 hover:bg-gray-600 text-white', resultValue: false },
+                    { text: 'Xác nhận', className: 'bg-red-600 hover:bg-red-700 text-white', resultValue: true }
+                ]
+            );
+        }
+
+        /**
+         * Shows a prompt modal for text input.
+         * @param {string} message - The prompt message.
+         * @param {string} defaultValue - The default value for the input.
+         * @returns {Promise<string|null>} Resolves with the input string or null if cancelled.
+         */
+        function showPromptModal(title, message, defaultValue = '') {
+            return new Promise(resolve => {
+                const inputId = 'modalPromptInput';
+                showCustomModal(
+                    title,
+                    `<p class="text-gray-700 mb-3">${message}</p><input type="text" id="${inputId}" value="${defaultValue}" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">`,
+                    [
+                        { text: 'Hủy', className: 'bg-gray-500 hover:bg-gray-600 text-white', onClick: () => resolve(null) },
+                        { text: 'Xác nhận', className: 'bg-blue-600 hover:bg-blue-700 text-white', onClick: () => resolve(document.getElementById(inputId).value) }
+                    ],
+                    true // Show close button
+                );
+                // Focus the input field after a slight delay to ensure it's rendered
+                setTimeout(() => {
+                    const inputElement = document.getElementById(inputId);
+                    if (inputElement) inputElement.focus();
+                }, 100);
+            });
+        }
+
+        // --- Logic for Topic Management ---
+
+        /**
+         * Populates parent category dropdowns across all relevant sections.
+         */
+        function populateParentCategorySelects() {
+            [parentCategorySelect, selectCategoryForVocab, selectCategoryForQuiz, selectCategoryForPerformance].forEach(selectElement => {
+                const selectedValue = selectElement.value; // Store current selection
+                selectElement.innerHTML = '<option value="">-- Chọn mục lớn --</option>';
+                appData.categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = category.name;
+                    selectElement.appendChild(option);
+                });
+                // Restore selection
+                if (selectedValue && appData.categories.some(cat => cat.id === selectedValue)) {
+                    selectElement.value = selectedValue;
+                } else {
+                    // For vocab/quiz/performance sections, if no category is selected or previous is gone, reset topic dropdowns
+                    if (selectElement.id === 'selectCategoryForVocab') {
+                        selectTopicForVocab.innerHTML = '<option value="">-- Chọn chủ đề con để quản lý từ vựng --</option>';
+                        vocabContentDiv.classList.add('hidden');
+                        currentTopicId = null;
+                    } else if (selectElement.id === 'selectCategoryForQuiz') {
+                        selectTopicForQuiz.innerHTML = '<option value="">-- Chọn chủ đề con để bắt đầu kiểm tra --</option>';
+                    } else if (selectElement.id === 'selectCategoryForPerformance') {
+                        selectTopicForPerformance.innerHTML = '<option value="">-- Chọn chủ đề con để xem hiệu suất --</option>';
+                        performanceContentDiv.classList.add('hidden');
+                    }
+                    selectElement.value = ''; // Ensure no lingering selection if previous is invalid
                 }
-                document.getElementById('quizQuestion').textContent = questionText;
-                // Store the *actual* direction for this specific question to use in checkAnswer
-                currentVocab._actualQuizDirection = actualDirectionForThisQuestion;
-                startQuizTimer();
+                // Trigger change event if needed for dependent dropdowns after populating
+                // This will trigger dependent dropdowns to update.
+                if (selectElement.id === 'selectCategoryForVocab' && selectElement.value) {
+                    selectElement.dispatchEvent(new Event('change'));
+                }
+                if (selectElement.id === 'selectCategoryForQuiz' && selectElement.value) {
+                    selectElement.dispatchEvent(new Event('change'));
+                }
+                if (selectElement.id === 'selectCategoryForPerformance' && selectElement.value) {
+                    selectElement.dispatchEvent(new Event('change'));
+                }
+            });
+        }
+
+        /**
+         * Renders the list of categories and their sub-topics in the Topic Management section.
+         */
+        function renderCategoriesAndTopics() {
+            categoriesListDiv.innerHTML = '';
+            if (appData.categories.every(cat => cat.topics.length === 0) && appData.categories.length === 0) {
+                categoriesListDiv.innerHTML = '<p class="text-gray-500 text-center col-span-full">Chưa có chủ đề nào. Hãy thêm chủ đề mới!</p>';
+                return;
+            }
+
+            appData.categories.forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'bg-white p-6 rounded-lg shadow-md';
+                categoryDiv.innerHTML = `
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-bold text-gray-800">${category.name}</h3>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="topics-for-${category.id}">
+                        ${category.topics.length === 0 ? '<p class="text-gray-500 col-span-full">Chưa có chủ đề con nào trong mục này.</p>' : ''}
+                    </div>
+                `;
+                categoriesListDiv.appendChild(categoryDiv);
+
+                const topicsContainer = categoryDiv.querySelector(`#topics-for-${category.id}`);
+                category.topics.forEach(topic => {
+                    const topicCard = document.createElement('div');
+                    topicCard.className = 'bg-purple-100 p-4 rounded-lg shadow-sm flex flex-col justify-between items-start';
+                    topicCard.innerHTML = `
+                        <p class="text-lg font-medium text-purple-800 mb-2">${topic.name}</p>
+                        <p class="text-sm text-gray-600">${topic.vocabulary.length} từ vựng</p>
+                        <div class="flex space-x-2 mt-3">
+                            <button data-topic-id="${topic.id}" data-category-id="${category.id}" class="edit-topic-btn bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1 px-3 rounded-md transition-colors duration-200">Sửa</button>
+                            <button data-topic-id="${topic.id}" data-category-id="${category.id}" class="delete-topic-btn bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-1 px-3 rounded-md transition-colors duration-200">Xóa</button>
+                        </div>
+                    `;
+                    topicsContainer.appendChild(topicCard);
+                });
+            });
+
+            // Attach event listeners for edit and delete buttons
+            document.querySelectorAll('.edit-topic-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const topicId = event.target.dataset.topicId;
+                    const categoryId = event.target.dataset.categoryId;
+                    editTopic(categoryId, topicId);
+                });
+            });
+
+            document.querySelectorAll('.delete-topic-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const topicId = event.target.dataset.topicId;
+                    const categoryId = event.target.dataset.categoryId;
+                    deleteTopic(categoryId, topicId);
+                });
+            });
+        }
+
+        /**
+         * Handles adding a new sub-topic.
+         */
+        addTopicForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const categoryId = parentCategorySelect.value;
+            const topicName = newTopicNameInput.value.trim();
+
+            if (!categoryId) {
+                showMessage('Vui lòng chọn một mục lớn.', 'error');
+                return;
+            }
+
+            if (!topicName) {
+                showMessage('Vui lòng nhập tên chủ đề con.', 'error');
+                return;
+            }
+
+            const category = appData.categories.find(cat => cat.id === categoryId);
+            if (category) {
+                // Check for duplicate topic names within the same category
+                if (category.topics.some(topic => topic.name.toLowerCase() === topicName.toLowerCase())) {
+                    showMessage(`Chủ đề "${topicName}" đã tồn tại trong mục "${category.name}".`, 'error');
+                    return;
+                }
+
+                category.topics.push({
+                    id: generateUniqueId(),
+                    name: topicName,
+                    vocabulary: [],
+                    results: [] // Initialize results array for new topics
+                });
+                saveAppData();
+                renderCategoriesAndTopics();
+                populateParentCategorySelects(); // Re-populate all dropdowns
+                showMessage(`Đã thêm chủ đề "${topicName}" vào mục "${category.name}".`, 'success');
+                newTopicNameInput.value = '';
+            } else {
+                showMessage('Mục lớn không hợp lệ.', 'error');
+            }
+        });
+
+        /**
+         * Edits an existing sub-topic's name using a custom prompt modal.
+         * @param {string} categoryId - The ID of the parent category.
+         * @param {string} topicId - The ID of the topic to edit.
+         */
+        async function editTopic(categoryId, topicId) {
+            const category = appData.categories.find(cat => cat.id === categoryId);
+            const topic = category ? category.topics.find(t => t.id === topicId) : null;
+
+            if (topic) {
+                const newName = await showPromptModal(`Sửa tên chủ đề "${topic.name}"`, `Nhập tên mới cho chủ đề "${topic.name}":`, topic.name);
+
+                if (newName !== null) { // User didn't cancel
+                    const trimmedName = newName.trim();
+                    if (trimmedName === '') {
+                        showMessage('Tên chủ đề không được để trống.', 'error');
+                        return;
+                    }
+                    // Check for duplicate topic names within the same category, excluding the current topic
+                    if (category.topics.some(t => t.id !== topicId && t.name.toLowerCase() === trimmedName.toLowerCase())) {
+                        showMessage(`Chủ đề "${trimmedName}" đã tồn tại trong mục "${category.name}".`, 'error');
+                        return;
+                    }
+                    topic.name = trimmedName;
+                    saveAppData();
+                    renderCategoriesAndTopics();
+                    populateParentCategorySelects(); // Re-populate all dropdowns
+                    showMessage(`Đã đổi tên chủ đề thành "${trimmedName}".`, 'success');
+                }
+            } else {
+                showMessage('Không tìm thấy chủ đề để sửa.', 'error');
+            }
+        }
+
+        /**
+         * Deletes a sub-topic using a custom confirmation modal.
+         * @param {string} categoryId - The ID of the parent category.
+         * @param {string} topicId - The ID of the topic to delete.
+         */
+        async function deleteTopic(categoryId, topicId) {
+            const category = appData.categories.find(cat => cat.id === categoryId);
+            if (category) {
+                const topicIndex = category.topics.findIndex(t => t.id === topicId);
+                if (topicIndex > -1) {
+                    const topicName = category.topics[topicIndex].name;
+                    const confirmed = await showConfirmModal(`Bạn có chắc chắn muốn xóa chủ đề "${topicName}" và tất cả từ vựng của nó?`);
+
+                    if (confirmed) {
+                        category.topics.splice(topicIndex, 1);
+                        saveAppData();
+                        renderCategoriesAndTopics();
+                        populateParentCategorySelects(); // Re-populate all dropdowns
+                        showMessage(`Đã xóa chủ đề "${topicName}".`, 'success');
+                        // Reset currentTopicId if the deleted topic was selected
+                        if (currentTopicId === topicId) {
+                            currentTopicId = null;
+                            vocabContentDiv.classList.add('hidden');
+                            selectTopicForVocab.value = '';
+                        }
+                    }
+                } else {
+                    showMessage('Không tìm thấy chủ đề để xóa.', 'error');
+                }
+            } else {
+                showMessage('Mục lớn không hợp lệ.', 'error');
+            }
+        }
+
+        // --- Logic for Vocabulary Management ---
+
+        /**
+         * Populates the sub-topic dropdown based on the selected category for vocabulary management.
+         */
+        selectCategoryForVocab.addEventListener('change', () => {
+            currentCategoryId = selectCategoryForVocab.value;
+            selectTopicForVocab.innerHTML = '<option value="">-- Chọn chủ đề con để quản lý từ vựng --</option>';
+            vocabContentDiv.classList.add('hidden'); // Hide vocab content until a topic is selected
+            currentTopicId = null; // Reset current topic
+
+            if (currentCategoryId) {
+                const category = appData.categories.find(cat => cat.id === currentCategoryId);
+                if (category) {
+                    category.topics.forEach(topic => {
+                        const option = document.createElement('option');
+                        option.value = topic.id;
+                        option.textContent = topic.name;
+                        selectTopicForVocab.appendChild(option);
+                    });
+                }
+            }
+        });
+
+        /**
+         * Displays vocabulary for the selected sub-topic.
+         */
+        selectTopicForVocab.addEventListener('change', () => {
+            currentTopicId = selectTopicForVocab.value;
+            if (currentTopicId) {
+                vocabContentDiv.classList.remove('hidden');
+                renderVocabularyTable();
+            } else {
+                vocabContentDiv.classList.add('hidden');
+            }
+        });
+
+        /**
+         * Renders the vocabulary table for the currently selected topic.
+         */
+        function renderVocabularyTable() {
+            currentTopicVocabTableBody.innerHTML = '';
+            const category = appData.categories.find(cat => cat.id === currentCategoryId);
+            const topic = category ? category.topics.find(t => t.id === currentTopicId) : null;
+
+            if (topic && topic.vocabulary.length > 0) {
+                topic.vocabulary.forEach(vocab => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-gray-200 hover:bg-gray-100';
+                    row.innerHTML = `
+                        <td class="py-3 px-6 text-left whitespace-nowrap">${vocab.english}</td>
+                        <td class="py-3 px-6 text-left">${vocab.vietnamese}</td>
+                        <td class="py-3 px-6 text-left">${vocab.example || ''}</td>
+                        <td class="py-3 px-6 text-center">
+                            <div class="flex item-center justify-center">
+                                <button data-vocab-id="${vocab.id}" class="edit-vocab-btn w-6 h-6 mr-2 transform hover:text-purple-500 hover:scale-110" title="Sửa">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                </button>
+                                <button data-vocab-id="${vocab.id}" class="delete-vocab-btn w-6 h-6 ml-2 transform hover:text-purple-500 hover:scale-110" title="Xóa">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    currentTopicVocabTableBody.appendChild(row);
+                });
+                currentVocabCountSpan.textContent = topic.vocabulary.length;
+            } else {
+                currentTopicVocabTableBody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-gray-500">Chủ đề này chưa có từ vựng nào.</td></tr>';
+                currentVocabCountSpan.textContent = 0;
+            }
+
+            // Attach event listeners for edit and delete vocabulary buttons
+            document.querySelectorAll('.edit-vocab-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const vocabId = event.currentTarget.dataset.vocabId;
+                    editVocabulary(vocabId);
+                });
+            });
+
+            document.querySelectorAll('.delete-vocab-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const vocabId = event.currentTarget.dataset.vocabId;
+                    deleteVocabulary(vocabId);
+                });
+            });
+        }
+
+        /**
+         * Handles adding a single vocabulary entry.
+         */
+        addSingleVocabForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const english = englishWordInput.value.trim();
+            const vietnamese = vietnameseMeaningInput.value.trim();
+            const example = exampleSentenceInput.value.trim();
+
+            if (!english || !vietnamese) {
+                showMessage('Vui lòng nhập đầy đủ Từ Tiếng Anh và Nghĩa Tiếng Việt.', 'error');
+                return;
+            }
+
+            const category = appData.categories.find(cat => cat.id === currentCategoryId);
+            const topic = category ? category.topics.find(t => t.id === currentTopicId) : null;
+
+            if (topic) {
+                // Check for duplicate English word within the same topic
+                if (topic.vocabulary.some(v => v.english.toLowerCase() === english.toLowerCase())) {
+                    showMessage(`Từ tiếng Anh "${english}" đã tồn tại trong chủ đề này.`, 'error');
+                    return;
+                }
+
+                topic.vocabulary.push({
+                    id: generateUniqueId(),
+                    english: english,
+                    vietnamese: vietnamese,
+                    example: example,
+                    correctAttempts: 0, // For performance tracking
+                    incorrectAttempts: 0 // For performance tracking
+                });
+                saveAppData();
+                renderVocabularyTable();
+                showMessage(`Đã thêm từ "${english}".`, 'success');
+                addSingleVocabForm.reset();
+            } else {
+                showMessage('Vui lòng chọn một chủ đề hợp lệ.', 'error');
+            }
+        });
+
+        /**
+         * Handles bulk import of vocabulary.
+         */
+        bulkImportVocabForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const bulkText = bulkVocabInput.value.trim();
+            if (!bulkText) {
+                showMessage('Vui lòng nhập dữ liệu từ vựng để nhập hàng loạt.', 'error');
+                return;
+            }
+
+            const category = appData.categories.find(cat => cat.id === currentCategoryId);
+            const topic = category ? category.topics.find(t => t.id === currentTopicId) : null;
+
+            if (topic) {
+                const lines = bulkText.split('\n').filter(line => line.trim() !== '');
+                let addedCount = 0;
+                let skippedCount = 0;
+                const newVocabList = [];
+
+                lines.forEach(line => {
+                    const parts = line.split(' - ').map(part => part.trim());
+                    if (parts.length >= 2) {
+                        const english = parts[0];
+                        const vietnamese = parts[1];
+                        const example = parts[2] || '';
+
+                        // Check for duplicate English word within the new batch AND existing topic vocabulary
+                        if (topic.vocabulary.some(v => v.english.toLowerCase() === english.toLowerCase()) ||
+                            newVocabList.some(v => v.english.toLowerCase() === english.toLowerCase())) {
+                            skippedCount++;
+                            return;
+                        }
+
+                        newVocabList.push({
+                            id: generateUniqueId(),
+                            english: english,
+                            vietnamese: vietnamese,
+                            example: example,
+                            correctAttempts: 0,
+                            incorrectAttempts: 0
+                        });
+                        addedCount++;
+                    } else {
+                        skippedCount++;
+                    }
+                });
+
+                topic.vocabulary.push(...newVocabList);
+                saveAppData();
+                renderVocabularyTable();
+                if (addedCount > 0 || skippedCount > 0) {
+                    showMessage(`Đã nhập ${addedCount} từ vựng. Bỏ qua ${skippedCount} từ (có thể do trùng lặp hoặc sai định dạng).`, 'success');
+                } else {
+                    showMessage('Không có từ vựng nào được thêm. Vui lòng kiểm tra định dạng hoặc từ trùng lặp.', 'error');
+                }
+                bulkVocabInput.value = '';
+            } else {
+                showMessage('Vui lòng chọn một chủ đề hợp lệ để nhập hàng loạt.', 'error');
+            }
+        });
+
+        /**
+         * Edits a vocabulary entry using a custom prompt modal.
+         * @param {string} vocabId - The ID of the vocabulary entry to edit.
+         */
+        async function editVocabulary(vocabId) {
+            const category = appData.categories.find(cat => cat.id === currentCategoryId);
+            const topic = category ? category.topics.find(t => t.id === currentTopicId) : null;
+            const vocab = topic ? topic.vocabulary.find(v => v.id === vocabId) : null;
+
+            if (vocab) {
+                const newEnglish = await showPromptModal(`Sửa từ tiếng Anh "${vocab.english}"`, `Nhập từ tiếng Anh mới:`, vocab.english);
+                if (newEnglish === null) return; // User cancelled
+                const trimmedEnglish = newEnglish.trim();
+
+                const newVietnamese = await showPromptModal(`Sửa nghĩa tiếng Việt của "${vocab.english}"`, `Nhập nghĩa tiếng Việt mới:`, vocab.vietnamese);
+                if (newVietnamese === null) return; // User cancelled
+                const trimmedVietnamese = newVietnamese.trim();
+
+                const newExample = await showPromptModal(`Sửa ví dụ cho "${vocab.english}"`, `Nhập ví dụ câu mới (tùy chọn):`, vocab.example || '');
+                if (newExample === null) return; // User cancelled
+                const trimmedExample = newExample.trim();
+
+                if (trimmedEnglish === '' || trimmedVietnamese === '') {
+                    showMessage('Từ tiếng Anh và nghĩa tiếng Việt không được để trống.', 'error');
+                    return;
+                }
+
+                // Check for duplicate English word, excluding the current word being edited
+                if (topic.vocabulary.some(v => v.id !== vocabId && v.english.toLowerCase() === trimmedEnglish.toLowerCase())) {
+                    showMessage(`Từ tiếng Anh "${trimmedEnglish}" đã tồn tại trong chủ đề này.`, 'error');
+                    return;
+                }
+
+                vocab.english = trimmedEnglish;
+                vocab.vietnamese = trimmedVietnamese;
+                vocab.example = trimmedExample;
+                saveAppData();
+                renderVocabularyTable();
+                showMessage(`Đã cập nhật từ "${vocab.english}".`, 'success');
+            } else {
+                showMessage('Không tìm thấy từ vựng để sửa.', 'error');
+            }
+        }
+
+        /**
+         * Deletes a vocabulary entry using a custom confirmation modal.
+         * @param {string} vocabId - The ID of the vocabulary entry to delete.
+         */
+        async function deleteVocabulary(vocabId) {
+            const category = appData.categories.find(cat => cat.id === currentCategoryId);
+            const topic = category ? category.topics.find(t => t.id === currentTopicId) : null;
+
+            if (topic) {
+                const vocabIndex = topic.vocabulary.findIndex(v => v.id === vocabId);
+                if (vocabIndex > -1) {
+                    const vocabEnglish = topic.vocabulary[vocabIndex].english;
+                    const confirmed = await showConfirmModal(`Bạn có chắc chắn muốn xóa từ "${vocabEnglish}"?`);
+
+                    if (confirmed) {
+                        topic.vocabulary.splice(vocabIndex, 1);
+                        saveAppData();
+                        renderVocabularyTable();
+                        showMessage(`Đã xóa từ "${vocabEnglish}".`, 'success');
+                    }
+                } else {
+                    showMessage('Không tìm thấy từ vựng để xóa.', 'error');
+                }
+            } else {
+                showMessage('Vui lòng chọn một chủ đề hợp lệ.', 'error');
+            }
+        }
+
+        // --- Logic for Quiz Section ---
+
+        /**
+         * Handles switching between single topic quiz and mixed topic quiz modes.
+         */
+        quizModeRadios.forEach(radio => {
+            radio.addEventListener('change', (event) => {
+                currentQuiz.quizType = event.target.value;
+                if (currentQuiz.quizType === 'single') {
+                    singleTopicQuizOptionsDiv.classList.remove('hidden');
+                    mixedTopicQuizOptionsDiv.classList.add('hidden');
+                } else {
+                    singleTopicQuizOptionsDiv.classList.add('hidden');
+                    mixedTopicQuizOptionsDiv.classList.remove('hidden');
+                    populateMultiTopicCheckboxes();
+                }
+            });
+        });
+
+        /**
+         * Populates the sub-topic dropdown based on the selected category for quiz.
+         */
+        selectCategoryForQuiz.addEventListener('change', () => {
+            const selectedCategoryId = selectCategoryForQuiz.value;
+            selectTopicForQuiz.innerHTML = '<option value="">-- Chọn chủ đề con để bắt đầu kiểm tra --</option>';
+
+            if (selectedCategoryId) {
+                const category = appData.categories.find(cat => cat.id === selectedCategoryId);
+                if (category) {
+                    category.topics.forEach(topic => {
+                        const option = document.createElement('option');
+                        option.value = topic.id;
+                        option.textContent = topic.name;
+                        selectTopicForQuiz.appendChild(option);
+                    });
+                }
+            }
+        });
+
+        /**
+         * Populates checkboxes for mixed topic quiz selection.
+         */
+        function populateMultiTopicCheckboxes() {
+            multiTopicCheckboxesDiv.innerHTML = '';
+            let hasTopics = false;
+            appData.categories.forEach(category => {
+                if (category.topics.length > 0) {
+                    hasTopics = true;
+                    const categoryHeader = document.createElement('h4');
+                    categoryHeader.className = 'col-span-full text-md font-semibold text-gray-700 mt-2 mb-1';
+                    categoryHeader.textContent = category.name;
+                    multiTopicCheckboxesDiv.appendChild(categoryHeader);
+
+                    category.topics.forEach(topic => {
+                        const label = document.createElement('label');
+                        label.className = 'multi-select-option';
+                        label.innerHTML = `
+                            <input type="checkbox" value="${topic.id}" data-category-id="${category.id}" class="topic-checkbox">
+                            ${topic.name} (${topic.vocabulary.length} từ)
+                        `;
+                        multiTopicCheckboxesDiv.appendChild(label);
+                    });
+                }
+            });
+
+            if (!hasTopics) {
+                multiTopicCheckboxesDiv.innerHTML = '<p class="text-gray-500 col-span-full">Chưa có chủ đề nào để chọn.</p>';
+            }
+        }
+
+        /**
+         * Starts the quiz.
+         */
+        startQuizBtn.addEventListener('click', () => {
+            let selectedVocab = [];
+            let quizTopicIds = []; // To store the IDs of topics included in the quiz
+
+            const questionCount = parseInt(quizQuestionCountInput.value);
+            const timeLimit = parseInt(quizTimeLimitInput.value);
+
+            // Basic validation for quiz settings
+            if (isNaN(questionCount) || questionCount <= 0) {
+                showMessage('Số lượng câu hỏi không hợp lệ. Vui lòng nhập số nguyên dương.', 'error');
+                return;
+            }
+            if (isNaN(timeLimit) || timeLimit < 5) {
+                showMessage('Thời gian giới hạn không hợp lệ. Vui lòng nhập số giây lớn hơn hoặc bằng 5.', 'error');
+                return;
+            }
+
+            if (currentQuiz.quizType === 'single') {
+                const selectedCategoryId = selectCategoryForQuiz.value;
+                const quizTopicId = selectTopicForQuiz.value;
+
+                if (!selectedCategoryId || !quizTopicId) {
+                    showMessage('Vui lòng chọn Mục Lớn và Chủ Đề Con để bắt đầu kiểm tra.', 'error');
+                    return;
+                }
+
+                const category = appData.categories.find(cat => cat.id === selectedCategoryId);
+                const topic = category ? category.topics.find(t => t.id === quizTopicId) : null;
+
+                if (topic && topic.vocabulary.length > 0) {
+                    selectedVocab = [...topic.vocabulary]; // Clone array to avoid modifying original
+                    quizTopicIds = [quizTopicId];
+                } else {
+                    showMessage('Chủ đề được chọn không có từ vựng nào để kiểm tra.', 'error');
+                    return;
+                }
+            } else { // Mixed quiz
+                currentQuiz.selectedMixedTopicIds = Array.from(document.querySelectorAll('.topic-checkbox:checked')).map(cb => cb.value);
+                quizTopicIds = currentQuiz.selectedMixedTopicIds; // For performance tracking
+
+                if (currentQuiz.selectedMixedTopicIds.length === 0) {
+                    showMessage('Vui lòng chọn ít nhất một Chủ Đề Con để kiểm tra ngẫu nhiên.', 'error');
+                    return;
+                }
+
+                appData.categories.forEach(category => {
+                    category.topics.forEach(topic => {
+                        if (currentQuiz.selectedMixedTopicIds.includes(topic.id)) {
+                            selectedVocab = selectedVocab.concat(topic.vocabulary);
+                        }
+                    });
+                });
+
+                if (selectedVocab.length === 0) {
+                    showMessage('Các chủ đề được chọn không có từ vựng nào để kiểm tra.', 'error');
+                    return;
+                }
+            }
+
+            if (questionCount > selectedVocab.length) {
+                showMessage(`Số lượng câu hỏi (${questionCount}) vượt quá số từ vựng có sẵn (${selectedVocab.length}). Vui lòng giảm số câu hỏi.`, 'error');
+                return;
+            }
+
+            currentQuiz.quizTimeLimit = timeLimit;
+            currentQuiz.questions = shuffleArray(selectedVocab).slice(0, questionCount).map(vocab => ({
+                vocabId: vocab.id,
+                vietnamese: vocab.vietnamese,
+                english: vocab.english,
+                example: vocab.example,
+                answeredCorrectly: false,
+                userAnswer: ''
+            }));
+            currentQuiz.currentQuestionIndex = 0;
+            currentQuiz.score = 0;
+            currentQuiz.quizActive = true;
+            currentQuiz.associatedQuizTopicIds = quizTopicIds; // Store for performance tracking
+
+            quizSettingsDiv.classList.add('hidden');
+            quizArea.classList.remove('hidden');
+            quizResultsDiv.classList.add('hidden');
+            feedbackMessageDiv.classList.add('hidden');
+            englishAnswerInput.value = '';
+            englishAnswerInput.focus();
+
+            startQuestion();
+            // Enable cheat detection
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+            window.addEventListener('blur', handleWindowBlur);
+        });
+
+        /**
+         * Starts a new question in the quiz.
+         */
+        function startQuestion() {
+            if (currentQuiz.currentQuestionIndex < currentQuiz.questions.length) {
+                const question = currentQuiz.questions[currentQuiz.currentQuestionIndex];
+                vietnameseQuestionSpan.textContent = question.vietnamese;
+                currentQuestionNumberSpan.textContent = currentQuiz.currentQuestionIndex + 1;
+                totalQuizQuestionsSpan.textContent = currentQuiz.questions.length;
+                englishAnswerInput.value = '';
+                feedbackMessageDiv.classList.add('hidden');
+                englishAnswerInput.focus();
+                startTimer();
             } else {
                 endQuiz();
             }
         }
 
-        function startQuizTimer() {
-            let timeLeft = quizTimeLimit;
-            const quizTimerDisplay = document.getElementById('quizTimer');
-            if (!quizTimerDisplay) return;
+        /**
+         * Starts the timer for the current quiz question.
+         */
+        function startTimer() {
+            clearInterval(currentQuiz.timerInterval);
+            currentQuiz.timeRemaining = currentQuiz.quizTimeLimit;
+            quizTimerSpan.textContent = currentQuiz.timeRemaining;
 
-            quizTimerDisplay.textContent = timeLeft;
+            quizTimerSpan.classList.remove('text-red-600', 'text-yellow-600', 'text-green-600');
+            quizTimerSpan.classList.add('text-green-600'); // Start with green timer
 
-            quizTimerInterval = setInterval(() => {
-                timeLeft--;
-                quizTimerDisplay.textContent = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(quizTimerInterval);
-                    checkAnswer(true); // Auto-submit when time runs out
+            currentQuiz.timerInterval = setInterval(() => {
+                currentQuiz.timeRemaining--;
+                quizTimerSpan.textContent = currentQuiz.timeRemaining;
+
+                if (currentQuiz.timeRemaining <= 5) {
+                    quizTimerSpan.classList.remove('text-green-600');
+                    quizTimerSpan.classList.add('text-red-600'); // Red when time is low
+                } else if (currentQuiz.timeRemaining <= 15) {
+                    quizTimerSpan.classList.remove('text-red-600');
+                    quizTimerSpan.classList.add('text-yellow-600'); // Yellow for middle time
+                }
+
+                if (currentQuiz.timeRemaining <= 0) {
+                    clearInterval(currentQuiz.timerInterval);
+                    submitAnswer(true); // Submit with isTimedOut = true
                 }
             }, 1000);
         }
 
-        document.getElementById('submitAnswerBtn')?.addEventListener('click', () => checkAnswer(false));
-        document.getElementById('englishAnswerInput')?.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                if (!document.getElementById('submitAnswerBtn')?.classList.contains('hidden')) {
-                    checkAnswer(false);
-                } else if (!document.getElementById('nextQuestionBtn')?.classList.contains('hidden')) {
-                    loadNextQuestion();
+        /**
+         * Submits the user's answer.
+         * @param {boolean} isTimedOut - True if the answer was submitted due to time out.
+         */
+        function submitAnswer(isTimedOut = false) {
+            clearInterval(currentQuiz.timerInterval);
+            const userAnswer = englishAnswerInput.value.trim();
+            const currentQuestion = currentQuiz.questions[currentQuiz.currentQuestionIndex];
+            const correctAnswer = currentQuestion.english;
+
+            currentQuestion.userAnswer = userAnswer;
+
+            if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
+                currentQuiz.score++;
+                currentQuestion.answeredCorrectly = true;
+                feedbackMessageDiv.textContent = 'Chính xác!';
+                feedbackMessageDiv.className = 'text-center mt-4 text-lg font-semibold text-green-600';
+                feedbackMessageDiv.classList.remove('hidden');
+                updateVocabularyPerformance(currentQuestion.vocabId, currentQuiz.associatedQuizTopicIds, true);
+            } else {
+                currentQuestion.answeredCorrectly = false;
+                feedbackMessageDiv.innerHTML = `Sai rồi! Đáp án đúng là: <span class="font-bold">${correctAnswer}</span>`;
+                feedbackMessageDiv.className = 'text-center mt-4 text-lg font-semibold text-red-600';
+                feedbackMessageDiv.classList.remove('hidden');
+                updateVocabularyPerformance(currentQuestion.vocabId, currentQuiz.associatedQuizTopicIds, false);
+            }
+
+            // Move to next question after a short delay
+            setTimeout(() => {
+                currentQuiz.currentQuestionIndex++;
+                startQuestion();
+            }, 1500);
+        }
+
+        /**
+         * Skips the current question.
+         */
+        skipQuestionBtn.addEventListener('click', () => {
+            clearInterval(currentQuiz.timerInterval);
+            const currentQuestion = currentQuiz.questions[currentQuiz.currentQuestionIndex];
+            currentQuestion.answeredCorrectly = false; // Mark as incorrect if skipped
+            currentQuestion.userAnswer = ''; // No answer provided
+            feedbackMessageDiv.textContent = `Đã bỏ qua. Đáp án đúng là: ${currentQuestion.english}`;
+            feedbackMessageDiv.className = 'text-center mt-4 text-lg font-semibold text-gray-600';
+            feedbackMessageDiv.classList.remove('hidden');
+            updateVocabularyPerformance(currentQuestion.vocabId, currentQuiz.associatedQuizTopicIds, false); // Treat as incorrect attempt
+
+            setTimeout(() => {
+                currentQuiz.currentQuestionIndex++;
+                startQuestion();
+            }, 1500);
+        });
+
+        /**
+         * Updates the performance statistics for a vocabulary word.
+         * For mixed quizzes, updates the stats for the vocab item within *all* selected topics.
+         * @param {string} vocabId - The ID of the vocabulary word.
+         * @param {string[]} topicIds - Array of topic IDs that this quiz covered (relevant for mixed quizzes).
+         * @param {boolean} isCorrect - True if the answer was correct, false otherwise.
+         */
+        function updateVocabularyPerformance(vocabId, topicIds, isCorrect) {
+            let foundAndUpdated = false;
+            // Iterate through categories and topics to find the specific vocab item
+            for (const category of appData.categories) {
+                for (const topic of category.topics) {
+                    // Only update if the topic was part of this quiz AND contains the vocab
+                    if (topicIds.includes(topic.id)) {
+                        const vocab = topic.vocabulary.find(v => v.id === vocabId);
+                        if (vocab) {
+                            if (isCorrect) {
+                                vocab.correctAttempts = (vocab.correctAttempts || 0) + 1;
+                            } else {
+                                vocab.incorrectAttempts = (vocab.incorrectAttempts || 0) + 1;
+                            }
+                            foundAndUpdated = true;
+                            // No 'break' here because a vocab might theoretically be in multiple topics if allowed,
+                            // or for mixed quizzes, we need to ensure all relevant topics are checked.
+                            // If vocab items are unique across ALL topics, then you could break.
+                        }
+                    }
+                }
+            }
+            if (foundAndUpdated) {
+                saveAppData();
+            }
+        }
+
+
+        /**
+         * Ends the quiz and displays results.
+         * @param {boolean} cheated - True if the quiz ended due to cheat detection.
+         */
+        function endQuiz(cheated = false) {
+            clearInterval(currentQuiz.timerInterval);
+            currentQuiz.quizActive = false;
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('blur', handleWindowBlur);
+
+            quizArea.classList.add('hidden');
+            quizSettingsDiv.classList.remove('hidden'); // Show settings again
+
+            if (cheated) {
+                cheatDetectionMessage.classList.remove('hidden');
+                // Reset quiz state to prevent saving results
+                currentQuiz.questions = [];
+                currentQuiz.currentQuestionIndex = 0;
+                currentQuiz.score = 0;
+                currentQuiz.selectedMixedTopicIds = [];
+                currentQuiz.associatedQuizTopicIds = []; // Clear associated topics
+                return;
+            }
+
+            quizResultsDiv.classList.remove('hidden');
+            correctCountSpan.textContent = currentQuiz.score;
+            totalCountSpan.textContent = currentQuiz.questions.length;
+
+            detailedResultsDiv.innerHTML = '';
+            currentQuiz.questions.forEach((question, index) => {
+                const resultItem = document.createElement('div');
+                resultItem.className = `p-3 rounded-lg shadow-sm ${question.answeredCorrectly ? 'bg-green-50' : 'bg-red-50'}`;
+                resultItem.innerHTML = `
+                    <p class="font-semibold text-gray-800">Câu ${index + 1}: ${question.vietnamese}</p>
+                    <p>Đáp án của bạn: <span class="font-medium">${question.userAnswer || '[Không trả lời]'}</span></p>
+                    <p>Đáp án đúng: <span class="font-medium text-green-700">${question.english}</span></p>
+                    ${question.example ? `<p class="text-sm text-gray-600">Ví dụ: ${question.example}</p>` : ''}
+                `;
+                detailedResultsDiv.appendChild(resultItem);
+            });
+
+            // Save quiz results to the topic's performance history
+            if (currentQuiz.questions.length > 0) {
+                const quizResult = {
+                    id: generateUniqueId(), // Give quiz result a unique ID for easier lookup later
+                    date: new Date().toISOString(),
+                    score: currentQuiz.score,
+                    totalQuestions: currentQuiz.questions.length,
+                    type: currentQuiz.quizType,
+                    associatedTopics: currentQuiz.associatedQuizTopicIds,
+                    details: currentQuiz.questions.map(q => ({
+                        vocabId: q.vocabId,
+                        english: q.english,
+                        vietnamese: q.vietnamese,
+                        answeredCorrectly: q.answeredCorrectly,
+                        userAnswer: q.userAnswer
+                    }))
+                };
+
+                // Add result to relevant topics
+                quizResult.associatedTopics.forEach(topicId => {
+                    appData.categories.forEach(category => {
+                        const topic = category.topics.find(t => t.id === topicId);
+                        if (topic) {
+                            topic.results.push(quizResult);
+                        }
+                    });
+                });
+                saveAppData();
+            }
+        }
+
+        /**
+         * Retakes the quiz (resets quiz area and shows settings).
+         */
+        retakeQuizBtn.addEventListener('click', () => {
+            quizResultsDiv.classList.add('hidden');
+            quizSettingsDiv.classList.remove('hidden');
+            // Reset any selected mixed topic checkboxes
+            document.querySelectorAll('.topic-checkbox:checked').forEach(cb => cb.checked = false);
+            // Reset single topic selection
+            selectCategoryForQuiz.value = '';
+            selectTopicForQuiz.innerHTML = '<option value="">-- Chọn chủ đề con để bắt đầu kiểm tra --</option>';
+            // Ensure quiz mode radios are reset to default or previous
+            document.querySelector('input[name="quizMode"][value="single"]').checked = true;
+            singleTopicQuizOptionsDiv.classList.remove('hidden');
+            mixedTopicQuizOptionsDiv.classList.add('hidden');
+        });
+
+        // Cheat detection
+        let cheatDetected = false;
+        function handleVisibilityChange() {
+            if (document.hidden && currentQuiz.quizActive) {
+                cheatDetected = true;
+                endQuiz(true); // End quiz due to cheating
+            }
+        }
+
+        function handleWindowBlur() {
+            if (currentQuiz.quizActive) {
+                cheatDetected = true;
+                endQuiz(true); // End quiz due to cheating
+            }
+        }
+
+        closeCheatMessageBtn.addEventListener('click', () => {
+            cheatDetectionMessage.classList.add('hidden');
+            cheatDetected = false; // Reset cheat detection flag
+        });
+
+        // Event listener for submitting answer with Enter key
+        englishAnswerInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent default form submission
+                submitAnswer();
+            }
+        });
+
+        // --- Logic for Performance Section ---
+
+        /**
+         * Populates the sub-topic dropdown based on the selected category for performance tracking.
+         */
+        selectCategoryForPerformance.addEventListener('change', () => {
+            const selectedCategoryId = selectCategoryForPerformance.value;
+            selectTopicForPerformance.innerHTML = '<option value="">-- Chọn chủ đề con để xem hiệu suất --</option>';
+            performanceContentDiv.classList.add('hidden'); // Hide performance content until a topic is selected
+
+            if (selectedCategoryId) {
+                const category = appData.categories.find(cat => cat.id === selectedCategoryId);
+                if (category) {
+                    category.topics.forEach(topic => {
+                        const option = document.createElement('option');
+                        option.value = topic.id;
+                        option.textContent = topic.name;
+                        selectTopicForPerformance.appendChild(option);
+                    });
                 }
             }
         });
 
-        function checkAnswer(timeOut = false) {
-            clearInterval(quizTimerInterval);
-            document.getElementById('submitAnswerBtn')?.classList.add('hidden');
-            document.getElementById('nextQuestionBtn')?.classList.remove('hidden');
-
-            const currentVocab = currentQuizVocabs[currentQuestionIndex];
-            const userAnswer = document.getElementById('englishAnswerInput').value.trim();
-            const feedbackMessage = document.getElementById('feedbackMessage');
-            const englishAnswerInput = document.getElementById('englishAnswerInput');
-
-            if (!feedbackMessage || !englishAnswerInput) return;
-
-            feedbackMessage.classList.remove('hidden', 'text-green-600', 'text-red-600');
-            englishAnswerInput.classList.remove('border-green-500', 'border-red-500');
-
-            let isCorrect = false;
-            let correctAnswerDisplayed = '';
-
-            // Use the actual direction stored for this question
-            const actualDirection = currentVocab._actualQuizDirection;
-
-            if (actualDirection === 'viet-to-eng') {
-                const correctEnglish = currentVocab.english.toLowerCase();
-                isCorrect = (userAnswer.toLowerCase() === correctEnglish);
-                correctAnswerDisplayed = currentVocab.english;
-            } else { // eng-to-viet
-                const userMeanings = userAnswer.toLowerCase().split(',').map(m => m.trim()).filter(m => m !== '');
-                const correctMeanings = currentVocab.vietnamese.map(m => m.toLowerCase());
-
-                // Check if user's answer contains at least one of the correct meanings
-                isCorrect = userMeanings.some(userM => correctMeanings.includes(userM));
-                correctAnswerDisplayed = currentVocab.vietnamese.join(', ');
-            }
-
-
-            if (isCorrect) {
-                quizCorrectAnswers++;
-                feedbackMessage.textContent = 'Chính xác!';
-                feedbackMessage.classList.add('text-green-600');
-                englishAnswerInput.classList.add('border-green-500');
+        /**
+         * Displays performance data for the selected sub-topic.
+         */
+        selectTopicForPerformance.addEventListener('change', () => {
+            const selectedTopicId = selectTopicForPerformance.value;
+            if (selectedTopicId) {
+                performanceContentDiv.classList.remove('hidden');
+                renderPerformanceTable(selectedTopicId);
             } else {
-                quizIncorrectAnswers++;
-                let message = 'Sai rồi.';
-                if (timeOut) {
-                    message = 'Hết giờ! Đáp án đúng là:';
+                performanceContentDiv.classList.add('hidden');
+            }
+        });
+
+        /**
+         * Renders the performance history table for the selected topic.
+         * @param {string} topicId - The ID of the topic to display performance for.
+         */
+        function renderPerformanceTable(topicId) {
+            performanceTableBody.innerHTML = '';
+            const category = appData.categories.find(cat => cat.id === selectCategoryForPerformance.value);
+            const topic = category ? category.topics.find(t => t.id === topicId) : null;
+
+            if (topic && topic.results.length > 0) {
+                // Filter results to only show those directly related to this topic,
+                // or if it was a mixed quiz that included this topic.
+                const filteredResults = topic.results.filter(r => r.associatedTopics.includes(topicId));
+
+                // Sort results by date, newest first
+                const sortedResults = [...filteredResults].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                if (sortedResults.length > 0) {
+                    sortedResults.forEach(result => {
+                        const row = document.createElement('tr');
+                        row.className = 'border-b border-gray-200 hover:bg-gray-100';
+
+                        const date = new Date(result.date).toLocaleString('vi-VN', {
+                            year: 'numeric', month: 'numeric', day: 'numeric',
+                            hour: '2-digit', minute: '2-digit'
+                        });
+                        const scoreText = `${result.score}/${result.totalQuestions}`;
+                        const quizType = result.type === 'single' ? 'Theo chủ đề' : 'Ngẫu nhiên';
+
+                        row.innerHTML = `
+                            <td class="py-3 px-6 text-left">${date}</td>
+                            <td class="py-3 px-6 text-left">${scoreText}</td>
+                            <td class="py-3 px-6 text-left">${result.totalQuestions}</td>
+                            <td class="py-3 px-6 text-left">${quizType}</td>
+                            <td class="py-3 px-6 text-center">
+                                <button data-result-id="${result.id}" data-topic-id="${topicId}" class="view-details-btn bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1 px-3 rounded-md transition-colors duration-200">Xem chi tiết</button>
+                            </td>
+                        `;
+                        performanceTableBody.appendChild(row);
+                    });
                 } else {
-                    message = 'Sai rồi! Đáp án đúng là:';
+                     performanceTableBody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-gray-500">Chưa có lịch sử bài kiểm tra cho chủ đề này.</td></tr>';
                 }
-                feedbackMessage.innerHTML = `${message} <span class="font-bold">${correctAnswerDisplayed}</span>.`;
-                feedbackMessage.classList.add('text-red-600');
-                englishAnswerInput.classList.add('border-red-500');
-
-                quizWordsToReview.push({
-                    english: currentVocab.english,
-                    correctMeaning: currentVocab.vietnamese.join(', '),
-                    userAnswer: userAnswer || '<Không trả lời>'
-                });
+            } else {
+                performanceTableBody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-gray-500">Chưa có lịch sử bài kiểm tra cho chủ đề này.</td></tr>';
             }
-
-            document.getElementById('quizCorrectCount').textContent = quizCorrectAnswers;
-            document.getElementById('quizIncorrectCount').textContent = quizIncorrectAnswers;
         }
 
-        document.getElementById('nextQuestionBtn')?.addEventListener('click', function() {
-            currentQuestionIndex++;
-            loadNextQuestion();
-        });
+        /**
+         * Displays a modal with detailed results of a past quiz.
+         * @param {string} topicId - The ID of the topic the quiz was associated with.
+         * @param {string} resultId - The unique ID of the quiz result to view.
+         */
+        function viewQuizDetails(topicId, resultId) {
+            const category = appData.categories.find(cat => cat.id === selectCategoryForPerformance.value);
+            const topic = category ? category.topics.find(t => t.id === topicId) : null;
+            const quizResult = topic ? topic.results.find(r => r.id === resultId) : null;
 
-        document.getElementById('endQuizBtn')?.addEventListener('click', endQuiz);
-
-        function endQuiz() {
-            clearInterval(quizTimerInterval);
-            document.getElementById('quizArea')?.classList.add('hidden');
-            document.getElementById('quizResults')?.classList.remove('hidden');
-            document.getElementById('quizSettings')?.classList.remove('hidden');
-
-            const totalQuestions = currentQuizVocabs.length;
-            const score = totalQuestions > 0 ? ((quizCorrectAnswers / totalQuestions) * 100).toFixed(0) : 0;
-
-            document.getElementById('resultsTotalQuestions').textContent = totalQuestions;
-            document.getElementById('resultsScore').textContent = `${score}%`;
-            document.getElementById('resultsCorrect').textContent = quizCorrectAnswers;
-            document.getElementById('resultsIncorrect').textContent = quizIncorrectAnswers;
-
-            quizResults.push({
-                timestamp: new Date().toISOString(),
-                totalQuestions: totalQuestions,
-                correct: quizCorrectAnswers,
-                incorrect: quizIncorrectAnswers,
-                score: parseFloat(score),
-                wordsToReview: quizWordsToReview.map(w => ({english: w.english, userAnswer: w.userAnswer}))
-            });
-            saveToLocalStorage();
-            updatePerformanceStats();
-
-            displayWordsToReview();
-        }
-
-        function displayWordsToReview() {
-            const wordsToReviewTableBody = document.getElementById('wordsToReviewTableBody');
-            if (!wordsToReviewTableBody) return;
-
-            wordsToReviewTableBody.innerHTML = '';
-
-            if (quizWordsToReview.length === 0) {
-                wordsToReviewTableBody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-gray-500">Chúc mừng! Bạn đã trả lời đúng tất cả.</td></tr>';
-                return;
-            }
-
-            quizWordsToReview.forEach(word => {
-                const row = document.createElement('tr');
-                row.className = 'border-b border-gray-100 hover:bg-gray-50';
-                row.innerHTML = `
-                    <td class="py-3 px-6 text-left">${word.english}</td>
-                    <td class="py-3 px-6 text-left text-green-600 font-medium">${word.correctMeaning}</td>
-                    <td class="py-3 px-6 text-left text-red-600">${word.userAnswer}</td>
-                `;
-                wordsToReviewTableBody.appendChild(row);
-            });
-        }
-
-        document.getElementById('retakeQuizBtn')?.addEventListener('click', function() {
-            currentQuestionIndex = 0;
-            quizCorrectAnswers = 0;
-            quizIncorrectAnswers = 0;
-            quizWordsToReview = [];
-
-            document.getElementById('quizResults')?.classList.add('hidden');
-            document.getElementById('quizArea')?.classList.remove('hidden');
-
-            document.getElementById('totalQuizQuestions').textContent = currentQuizVocabs.length;
-            document.getElementById('quizCorrectCount').textContent = quizCorrectAnswers;
-            document.getElementById('quizIncorrectCount').textContent = quizIncorrectAnswers;
-
-            loadNextQuestion();
-        });
-
-        document.getElementById('newQuizBtn')?.addEventListener('click', function() {
-            document.getElementById('quizResults')?.classList.add('hidden');
-            document.getElementById('quizArea')?.classList.add('hidden');
-            document.getElementById('quizSettings')?.classList.remove('hidden');
-            // Re-populate select topics for quiz section
-            populateParentCategories('selectCategoryForQuiz', true);
-            const currentCategoryQuiz = document.getElementById('selectCategoryForQuiz').value;
-            populateTopicsForCategory(currentCategoryQuiz, 'selectTopicForQuiz', true);
-            if (document.querySelector('input[name="quizMode"]:checked')?.value === 'mixed') {
-                populateMultiTopicCheckboxes();
-            }
-        });
-
-        // --- Performance Section ---
-        function updatePerformanceStats() {
-            document.getElementById('totalTopicsStat').textContent = Object.values(categories).flat().length;
-            document.getElementById('totalVocabStat').textContent = vocabularies.length;
-            document.getElementById('completedQuizzesStat').textContent = quizResults.length;
-
-            displayTopicPerformance();
-        }
-
-        function displayTopicPerformance() {
-            const topicPerformanceList = document.getElementById('topicPerformanceList');
-            if (!topicPerformanceList) return;
-
-            topicPerformanceList.innerHTML = '';
-
-            const allTopics = Object.values(categories).flat();
-            if (allTopics.length === 0) {
-                topicPerformanceList.innerHTML = '<p class="text-gray-500 text-center">Chưa có chủ đề nào để hiển thị hiệu suất.</p>';
-                return;
-            }
-
-            allTopics.forEach(topic => {
-                const topicVocabs = vocabularies.filter(vocab => vocab.topicId === topic.id);
-                // Filter quiz results to include only those where *any* word from the topic was part of the quiz
-                const quizAttemptsForTopic = quizResults.filter(result =>
-                    result.wordsToReview.some(wordInReview =>
-                        topicVocabs.some(topicVocab => topicVocab.english === wordInReview.english)
-                    )
-                );
-
-                const totalWordsInTopic = topicVocabs.length;
-                let averageScore = 0;
-                if (quizAttemptsForTopic.length > 0) {
-                    const totalScores = quizAttemptsForTopic.reduce((sum, result) => sum + result.score, 0);
-                    averageScore = (totalScores / quizAttemptsForTopic.length).toFixed(1);
-                }
-
-                const topicDiv = document.createElement('div');
-                topicDiv.className = 'bg-white p-4 rounded-lg shadow-md flex justify-between items-center';
-                topicDiv.innerHTML = `
-                    <div>
-                        <h4 class="text-lg font-semibold text-gray-800">${topic.name}</h4>
-                        <p class="text-gray-600 text-sm">Từ vựng: ${totalWordsInTopic}</p>
-                        <p class="text-gray-600 text-sm">Số lần kiểm tra: ${quizAttemptsForTopic.length}</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-gray-600 text-sm">Điểm trung bình:</p>
-                        <p class="text-2xl font-bold ${averageScore >= 70 ? 'text-green-600' : averageScore >= 50 ? 'text-yellow-600' : 'text-red-600'}">
-                            ${averageScore}%
-                        </p>
+            if (quizResult) {
+                const modalContentHtml = `
+                    <h3 class="text-2xl font-bold text-purple-700 mb-4">Chi Tiết Bài Kiểm Tra</h3>
+                    <p class="mb-2"><strong>Ngày:</strong> ${new Date(quizResult.date).toLocaleString('vi-VN')}</p>
+                    <p class="mb-2"><strong>Điểm:</strong> ${quizResult.score}/${quizResult.totalQuestions}</p>
+                    <p class="mb-4"><strong>Loại bài:</strong> ${quizResult.type === 'single' ? 'Theo chủ đề' : 'Ngẫu nhiên'}</p>
+                    <div class="space-y-3 max-h-96 overflow-y-auto p-2 border rounded-lg bg-gray-50">
+                        ${quizResult.details.map((detail, index) => `
+                            <div class="p-3 rounded-lg ${detail.answeredCorrectly ? 'bg-green-100' : 'bg-red-100'}">
+                                <p class="font-semibold text-gray-800">Câu ${index + 1}: ${detail.vietnamese}</p>
+                                <p>Đáp án của bạn: <span class="font-medium">${detail.userAnswer || '[Không trả lời]'}</span></p>
+                                <p>Đáp án đúng: <span class="font-medium text-green-700">${detail.english}</span></p>
+                                ${detail.example ? `<p class="text-sm text-gray-600">Ví dụ: ${detail.example}</p>` : ''}
+                            </div>
+                        `).join('')}
                     </div>
                 `;
-                topicPerformanceList.appendChild(topicDiv);
-            });
+                // Use showCustomModal for displaying quiz details
+                showCustomModal('Chi Tiết Bài Kiểm Tra', modalContentHtml, [
+                    { text: 'Đóng', className: 'bg-gray-500 hover:bg-gray-600 text-white' }
+                ]);
+            } else {
+                showMessage('Không tìm thấy chi tiết bài kiểm tra.', 'error');
+            }
         }
 
 
-        // --- Navigation ---
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.querySelectorAll('.section').forEach(section => {
-                    section.classList.remove('active');
-                });
-                document.querySelectorAll('.nav-link').forEach(nav => {
-                    nav.classList.remove('active-nav-link');
-                });
+        // --- Initial Load and Event Listeners ---
 
-                const targetSectionId = this.getAttribute('href').substring(1);
-                const targetSection = document.getElementById(targetSectionId);
-                if (targetSection) { // Check if element exists
-                    targetSection.classList.add('active');
-                }
-                this.classList.add('active-nav-link');
-
-                // Re-populate selects and display lists when navigating to relevant sections
-                if (targetSectionId === 'topics-section') {
-                    populateParentCategories('parentCategorySelect', false);
-                    displayTopics(); // Call displayTopics *after* populating categories
-                } else if (targetSectionId === 'vocabulary-management-section') {
-                    populateParentCategories('selectCategoryForVocab', true);
-                    const currentCategoryVocab = document.getElementById('selectCategoryForVocab')?.value;
-                    if (currentCategoryVocab) { // Only populate topics if a category is selected
-                        populateTopicsForCategory(currentCategoryVocab, 'selectTopicForVocab', true);
-                    } else { // Clear topics if no category selected
-                        document.getElementById('selectTopicForVocab').innerHTML = '<option value="">-- Chọn chủ đề con để quản lý từ vựng --</option>';
-                    }
-                    document.getElementById('vocabContent')?.classList.add('hidden'); // Always hide initially
-                } else if (targetSectionId === 'quiz-section') {
-                    populateParentCategories('selectCategoryForQuiz', true);
-                    const currentCategoryQuiz = document.getElementById('selectCategoryForQuiz')?.value;
-                    if (currentCategoryQuiz) { // Only populate topics if a category is selected
-                        populateTopicsForCategory(currentCategoryQuiz, 'selectTopicForQuiz', true);
-                    } else { // Clear topics if no category selected
-                         document.getElementById('selectTopicForQuiz').innerHTML = '<option value="">-- Chọn chủ đề con để bắt đầu kiểm tra --</option>';
-                    }
-                    if (document.querySelector('input[name="quizMode"]:checked')?.value === 'mixed') {
-                        populateMultiTopicCheckboxes();
-                    }
-                    document.getElementById('quizArea')?.classList.add('hidden');
-                    document.getElementById('quizResults')?.classList.add('hidden');
-                    document.getElementById('quizSettings')?.classList.remove('hidden');
-                } else if (targetSectionId === 'performance-section') {
-                    updatePerformanceStats();
-                }
+        // Navigation event listeners
+        navLinks.forEach(link => {
+            link.addEventListener('click', (event) => {
+                event.preventDefault();
+                const sectionId = event.target.getAttribute('href').substring(1);
+                showSection(sectionId);
             });
         });
-
-        function populateSelects() {
-            // Ensure initial population for all relevant selects
-            populateParentCategories('parentCategorySelect', false);
-            populateParentCategories('selectCategoryForVocab', true);
-            populateParentCategories('selectCategoryForQuiz', true);
-
-            // Trigger change event for vocab management select to populate its topics
-            const selectCategoryForVocab = document.getElementById('selectCategoryForVocab');
-            if (selectCategoryForVocab && selectCategoryForVocab.value) {
-                selectCategoryForVocab.dispatchEvent(new Event('change'));
-            } else {
-                 document.getElementById('selectTopicForVocab').innerHTML = '<option value="">-- Chọn chủ đề con để quản lý từ vựng --</option>';
-            }
-
-            // Trigger change event for quiz select to populate its topics
-            const selectCategoryForQuiz = document.getElementById('selectCategoryForQuiz');
-            if (selectCategoryForQuiz && selectCategoryForQuiz.value) {
-                selectCategoryForQuiz.dispatchEvent(new Event('change'));
-            } else {
-                 document.getElementById('selectTopicForQuiz').innerHTML = '<option value="">-- Chọn chủ đề con để bắt đầu kiểm tra --</option>';
-            }
-
-            populateMultiTopicCheckboxes();
-        }
 
         // Initial setup on page load
         document.addEventListener('DOMContentLoaded', () => {
-            // First, populate initial categories in the "Add Topic" form
-            populateParentCategories('parentCategorySelect', false);
-
-            // Then, display topics for the topics section
-            displayTopics();
-
-            // Then, populate all other dynamic selects
-            populateSelects();
-
-            // Set up initial active section and navigation link
-            const initialSectionId = window.location.hash ? window.location.hash.substring(1) : 'topics-section';
-            const initialNavLink = document.querySelector(`a[href="#${initialSectionId}"]`);
-
-            // Ensure the correct section is active on load
-            document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
-            const targetSection = document.getElementById(initialSectionId);
-            if (targetSection) {
-                targetSection.classList.add('active');
-            }
-
-            // Ensure the correct nav link is active
-            document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active-nav-link'));
-            if (initialNavLink) {
-                initialNavLink.classList.add('active-nav-link');
-            }
-
-            // Special handling for sections that need initial data display
-            if (initialSectionId === 'vocabulary-management-section') {
-                const selectedTopic = document.getElementById('selectTopicForVocab')?.value;
-                if (selectedTopic) {
-                    document.getElementById('vocabContent')?.classList.remove('hidden');
-                    displayVocabularies(selectedTopic);
-                }
-            } else if (initialSectionId === 'performance-section') {
-                updatePerformanceStats();
-            }
+            loadAppData();
+            populateParentCategorySelects();
+            renderCategoriesAndTopics(); // Render initial topics list
+            // Ensure correct section is shown based on URL hash or default
+            const initialSection = window.location.hash ? window.location.hash.substring(1) : 'topics-section';
+            showSection(initialSection);
         });
     </script>
 </body>
